@@ -21,7 +21,7 @@ storage_commits = "description(glob:'storage:*')"
 private_commits = "storage_commits | description(glob:'private:*')"
 
 [signing]
-key = {{ onepasswordRead "op://Infrastructure/Work Laptop/public key" | quote }}
+key = {{ .signingKey | quote }}
 behavior = "drop"
 backend = "ssh"
 

@@ -1,0 +1,14 @@
+[core]
+	editor = code --wait
+	autocrlf = false
+	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
+[user]
+	email = {{ .email | quote }}
+	name = Connor Fitzgerald
+	signingkey = {{ .signingKey }}
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = C:\\Users\\conno\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
+[commit]
+	gpgsign = true

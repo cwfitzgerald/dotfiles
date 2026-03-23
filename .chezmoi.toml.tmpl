@@ -1,7 +1,17 @@
 {{- $email := promptStringOnce . "email" "Email address" -}}
 
+{{- $keys := dict
+    "Bridgewater-CF" "op://Infrastructure/Work Laptop/public key"
+    "connor-zentop" "op://Infrastructure/Desktop/public key"
+    "connor-p16" "op://Infrastructure/P16/public key"
+-}}
+{{- if not (hasKey $keys .chezmoi.hostname) }}
+    {{ fail (printf "No signing key configured for hostname: %s" .chezmoi.hostname) }}
+{{- end }}
+
 [data]
 email = {{ $email | quote }}
+signingKey = {{ onepasswordRead (get $keys .chezmoi.hostname) | quote }}
 
 [edit]
 command = "code"
