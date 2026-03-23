@@ -1,0 +1,39 @@
+"$schema" = "https://jj-vcs.github.io/jj/latest/config-schema.json"
+
+[user]
+email = {{ .email | quote }}
+
+name = "Connor Fitzgerald"
+[aliases]
+log-gpg = ["log", "--config", "ui.show-cryptographic-signatures=true"]
+update = ["rebase", "-s", "roots(trunk()..@)", "-d", "trunk()"]
+
+[revsets]
+log = """
+    present(@) | 
+        ancestors(immutable_heads().. ~ (storage_commits ~ ..@), 2) |
+    present(trunk())
+"""
+
+[revset-aliases]
+storage = "ancestors(immutable_heads()..storage_commits, 2)"
+storage_commits = "description(glob:'storage:*')"
+private_commits = "storage_commits | description(glob:'private:*')"
+
+[signing]
+key = {{ onepasswordRead "op://Infrastructure/Work Laptop/public key" | quote }}
+
+behavior = "drop"
+backend = "ssh"
+[signing.backends.ssh]
+program = 'C:\Users\conno\AppData\Local\Microsoft\WindowsApps\op-ssh-sign.exe'
+
+[git]
+sign-on-push = true
+# Prevent pushing work in progress or anything explicitly labeled "private"
+private-commits = "private_commits"
+
+[ui]
+editor = "code --wait"
+default-command = "log"
+diff-editor = ":builtin"
