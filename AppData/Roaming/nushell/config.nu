@@ -16,6 +16,5 @@
 #
 # You can remove these comments if you want or leave
 # them for future reference.
-
-$env.config.buffer_editor = ["code", "--wait"]
+$env.config.buffer_editor = ["code.cmd", "--wait"]
 $env.config.show_banner = false
