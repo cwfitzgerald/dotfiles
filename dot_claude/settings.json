@@ -1,20 +1,18 @@
 {
-  "env": {
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
-  },
   "permissions": {
     "allow": [
       "Bash(cargo build:*)",
       "Bash(cargo check:*)",
       "Bash(cargo clippy:*)",
       "Bash(cargo deny:*)",
+      "Bash(cargo doc:*)",
       "Bash(cargo fmt:*)",
       "Bash(cargo nextest:*)",
       "Bash(cargo search:*)",
       "Bash(cargo test:*)",
       "Bash(cargo xtask:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
       "Bash(gh api:*)",
       "Bash(gh issue:*)",
       "Bash(gh pr:*)",
@@ -22,7 +20,12 @@
       "Bash(head:*)",
       "Bash(jj commit:*)",
       "Bash(jj diff:*)",
+      "Bash(jj file show:*)",
+      "Bash(jj log:*)",
+      "Bash(jj show:*)",
+      "Bash(ls:*)",
       "Bash(tail:*)",
+      "mcp__ide__getDiagnostics",
       "WebFetch(domain:crates.io)",
       "WebFetch(domain:docs.rs)",
       "WebFetch(domain:microsoft.github.io)",
@@ -57,6 +60,5 @@
     "rust-analyzer-lsp@claude-plugins-official": false,
     "github@claude-plugins-official": true
   },
-  "autoUpdatesChannel": "latest",
-  "voiceEnabled": false
+  "autoUpdatesChannel": "latest"
 }
