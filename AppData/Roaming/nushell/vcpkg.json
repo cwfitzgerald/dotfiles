@@ -110,9 +110,6 @@
           "PackageIdentifier": "twpayne.chezmoi"
         },
         {
-          "PackageIdentifier": "Unity.UnityHub"
-        },
-        {
           "PackageIdentifier": "Valve.Steam"
         },
         {
