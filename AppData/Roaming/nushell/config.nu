@@ -24,3 +24,8 @@ def --wrapped claude [...args: string] {
     $env.CLAUDE_CODE_OAUTH_TOKEN = (^op read "op://Private/Claude Code API Token/credential")
     ^claude ...$args
 }
+
+# Update all important winget packages
+def update-all [] {
+    winget import -i ($nu.default-config-dir | path join "packages.json")
+}

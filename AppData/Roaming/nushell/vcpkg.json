@@ -1,0 +1,143 @@
+{
+  "$schema": "https://aka.ms/winget-packages.schema.2.0.json",
+  "CreationDate": "2026-03-24T00:48:39.000-04:00",
+  "Sources": [
+    {
+      "Packages": [
+        {
+          "PackageIdentifier": "7zip.7zip"
+        },
+        {
+          "PackageIdentifier": "AgileBits.1Password"
+        },
+        {
+          "PackageIdentifier": "AgileBits.1Password.CLI"
+        },
+        {
+          "PackageIdentifier": "BaldurKarlsson.RenderDoc"
+        },
+        {
+          "PackageIdentifier": "CPUID.CPU-Z"
+        },
+        {
+          "PackageIdentifier": "CPUID.HWMonitor"
+        },
+        {
+          "PackageIdentifier": "darktable.darktable"
+        },
+        {
+          "PackageIdentifier": "DenoLand.Deno"
+        },
+        {
+          "PackageIdentifier": "garethgeorge.Backrest"
+        },
+        {
+          "PackageIdentifier": "GitHub.cli"
+        },
+        {
+          "PackageIdentifier": "GitHub.Copilot"
+        },
+        {
+          "PackageIdentifier": "Google.Chrome.EXE"
+        },
+        {
+          "PackageIdentifier": "Google.ChromeRemoteDesktopHost"
+        },
+        {
+          "PackageIdentifier": "Google.GoogleDrive"
+        },
+        {
+          "PackageIdentifier": "gulbanana.gg"
+        },
+        {
+          "PackageIdentifier": "ImageMagick.Q16-HDRI"
+        },
+        {
+          "PackageIdentifier": "Iterate.Cyberduck"
+        },
+        {
+          "PackageIdentifier": "KhronosGroup.VulkanSDK"
+        },
+        {
+          "PackageIdentifier": "Kitware.CMake"
+        },
+        {
+          "PackageIdentifier": "LLVM.LLVM"
+        },
+        {
+          "PackageIdentifier": "Microsoft.PowerShell"
+        },
+        {
+          "PackageIdentifier": "Microsoft.PowerToys"
+        },
+        {
+          "PackageIdentifier": "Microsoft.VisualStudioCode"
+        },
+        {
+          "PackageIdentifier": "Microsoft.WinDbg"
+        },
+        {
+          "PackageIdentifier": "Microsoft.WindowsTerminal"
+        },
+        {
+          "PackageIdentifier": "Ninja-build.Ninja"
+        },
+        {
+          "PackageIdentifier": "Notion.Notion"
+        },
+        {
+          "PackageIdentifier": "Nushell.Nushell"
+        },
+        {
+          "PackageIdentifier": "OBSProject.OBSStudio"
+        },
+        {
+          "PackageIdentifier": "OpenWhisperSystems.Signal"
+        },
+        {
+          "PackageIdentifier": "Python.Python.3.13"
+        },
+        {
+          "PackageIdentifier": "Rustlang.Rustup"
+        },
+        {
+          "PackageIdentifier": "Schniz.fnm"
+        },
+        {
+          "PackageIdentifier": "sharkdp.fd"
+        },
+        {
+          "PackageIdentifier": "SpecialK.SpecialK"
+        },
+        {
+          "PackageIdentifier": "TheDocumentFoundation.LibreOffice"
+        },
+        {
+          "PackageIdentifier": "twpayne.chezmoi"
+        },
+        {
+          "PackageIdentifier": "Unity.UnityHub"
+        },
+        {
+          "PackageIdentifier": "Valve.Steam"
+        },
+        {
+          "PackageIdentifier": "voidtools.Everything"
+        },
+        {
+          "PackageIdentifier": "Windscribe.Windscribe"
+        },
+        {
+          "PackageIdentifier": "Zoom.Zoom.EXE"
+        }
+      ],
+      "SourceDetails": {
+        "Argument": "https://cdn.winget.microsoft.com/cache",
+        "Identifier": "Microsoft.Winget.Source_8wekyb3d8bbwe",
+        "Name": "winget",
+        "Type": "Microsoft.PreIndexed.Package"
+      }
+    }
+  ],
+  "WinGetVersion": "1.28.220"
+}
