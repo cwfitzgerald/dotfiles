@@ -34,6 +34,17 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/caffeine.ps1 on"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
@@ -41,6 +52,10 @@
           {
             "type": "command",
             "command": "powershell -ExecutionPolicy Bypass -File C:\\/Users/conno/.claude/hooks/notify.ps1 'Task completed' complete"
+          },
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/caffeine.ps1 off"
           }
         ]
       }
