@@ -23,3 +23,9 @@ $env.config.show_banner = false
 def update-all [] {
     winget import -i ($nu.default-config-dir | path join "vcpkg.json")
 }
+
+$env.DIGITALOCEAN_ACCESS_TOKEN = "op://Infrastructure/Digital Ocean/credential"
+
+def --wrapped doctl [...args: string] {
+    op run -- doctl $args
+}
