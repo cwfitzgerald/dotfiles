@@ -3,13 +3,13 @@
 	autocrlf = false
 	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
 [user]
-	email = "connorwadefitzgerald@gmail.com"
+	email = "{{ .email }}"
 	name = Connor Fitzgerald
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILS1dLUPV7g4vZxwVQFbj1rb08p10UUb0/RU98asUbCI
+	signingkey = {{ .signingKey }}
 [gpg]
 	format = ssh
 [gpg "ssh"]
-	program = C:/Users/conno\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
+	program = {{ .chezmoi.homeDir }}\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
 [commit]
 	gpgsign = true
 [filter "lfs"]
