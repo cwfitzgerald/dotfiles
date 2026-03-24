@@ -38,9 +38,6 @@
           "PackageIdentifier": "GitHub.Copilot"
         },
         {
-          "PackageIdentifier": "Google.Chrome.EXE"
-        },
-        {
           "PackageIdentifier": "Google.ChromeRemoteDesktopHost"
         },
         {
@@ -72,9 +69,6 @@
         },
         {
           "PackageIdentifier": "Microsoft.VisualStudioCode"
-        },
-        {
-          "PackageIdentifier": "Microsoft.WinDbg"
         },
         {
           "PackageIdentifier": "Microsoft.WindowsTerminal"
