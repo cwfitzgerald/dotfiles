@@ -110,9 +110,6 @@
           "PackageIdentifier": "twpayne.chezmoi"
         },
         {
-          "PackageIdentifier": "Valve.Steam"
-        },
-        {
           "PackageIdentifier": "voidtools.Everything"
         },
         {
