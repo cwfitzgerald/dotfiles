@@ -27,5 +27,5 @@ def update-all [] {
 $env.DIGITALOCEAN_ACCESS_TOKEN = "op://Infrastructure/Digital Ocean/credential"
 
 def --wrapped doctl [...args: string] {
-    op run -- doctl $args
+    op run -- doctl ...$args
 }
