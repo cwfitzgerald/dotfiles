@@ -19,12 +19,6 @@
 $env.config.buffer_editor = ["code.cmd", "--wait"]
 $env.config.show_banner = false
 
-# Claude Code wrapper that fetches OAuth token from 1Password before invocation
-def --wrapped claude [...args: string] {
-    $env.CLAUDE_CODE_OAUTH_TOKEN = (^op read "op://Private/Claude Code API Token/credential")
-    ^claude ...$args
-}
-
 # Update all important winget packages
 def update-all [] {
     winget import -i ($nu.default-config-dir | path join "vcpkg.json")
