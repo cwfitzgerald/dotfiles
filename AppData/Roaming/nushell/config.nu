@@ -27,5 +27,5 @@ def --wrapped claude [...args: string] {
 
 # Update all important winget packages
 def update-all [] {
-    winget import -i ($nu.default-config-dir | path join "packages.json")
+    winget import -i ($nu.default-config-dir | path join "vcpkg.json")
 }
