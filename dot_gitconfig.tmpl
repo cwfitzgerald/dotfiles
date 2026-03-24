@@ -3,12 +3,17 @@
 	autocrlf = false
 	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
 [user]
-	email = {{ .email | quote }}
+	email = "connorwadefitzgerald@gmail.com"
 	name = Connor Fitzgerald
-	signingkey = {{ .signingKey }}
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILS1dLUPV7g4vZxwVQFbj1rb08p10UUb0/RU98asUbCI
 [gpg]
 	format = ssh
 [gpg "ssh"]
-	program = {{ .chezmoi.homeDir }}\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
+	program = C:/Users/conno\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
 [commit]
 	gpgsign = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
