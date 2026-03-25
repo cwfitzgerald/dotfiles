@@ -5,3 +5,5 @@ Always use `cargo nextest` to run tests if the project does not have specific in
 I want to be in control and produce very high quality work, so ask many questions, and clarify things often.
 
 You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
+
+Always use foreground agents, or else you will get permissions issues.
