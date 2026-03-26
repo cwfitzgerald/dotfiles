@@ -1,5 +1,5 @@
 def main [--revision (-r): string = "@"] {
-    let revset = $"::($revision) & ~ '::trunk()'"
+    let revset = $"::($revision) & ~ ::trunk()"
 
     jj log --no-pager -r $revset
 
