@@ -1,4 +1,4 @@
-I use `jj` for version control. You have permission to access `jj diff --git --no-pager -f <from> -t <to>`. `@` is the working directory. `'trunk()'` (quotes important) is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. Use `jj pr-diff --git --no-pager` to diff current head against the latest commit from trunk it touches.
+I use `jj` for version control. You have permission to access `jj diff --git --no-pager -f <from> -t <to>`. `@` is the working directory. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. Use `jj pr-diff --git --no-pager` to diff current head against the latest commit from trunk it touches.
 
 Always use `cargo nextest` to run tests if the project does not have specific instructions. Favor `cargo clippy` over `cargo check`. Always use LF line endings.
 
