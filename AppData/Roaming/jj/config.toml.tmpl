@@ -24,7 +24,7 @@ private_commits = "storage_commits | description(glob:'private:*')"
 
 [signing]
 key = {{ .signingKey | quote }}
-behavior = "force"
+behavior = "own"
 backend = "ssh"
 
 [signing.backends.ssh]
