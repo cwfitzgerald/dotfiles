@@ -119,6 +119,9 @@
           "PackageIdentifier": "Windscribe.Windscribe"
         },
         {
+          "PackageIdentifier": "AntibodySoftware.WizTree"
+        },
+        {
           "PackageIdentifier": "Zoom.Zoom.EXE"
         }
       ],
