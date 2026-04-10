@@ -17,12 +17,6 @@
           "PackageIdentifier": "BaldurKarlsson.RenderDoc"
         },
         {
-          "PackageIdentifier": "CPUID.CPU-Z"
-        },
-        {
-          "PackageIdentifier": "CPUID.HWMonitor"
-        },
-        {
           "PackageIdentifier": "darktable.darktable"
         },
         {
@@ -105,9 +99,6 @@
         },
         {
           "PackageIdentifier": "SpecialK.SpecialK"
-        },
-        {
-          "PackageIdentifier": "TheDocumentFoundation.LibreOffice"
         },
         {
           "PackageIdentifier": "twpayne.chezmoi"
