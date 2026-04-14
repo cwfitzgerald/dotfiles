@@ -1,18 +1,21 @@
-# Format every commit between trunk and the current branch tip.
+# Format every commit in a revset.
 #
 # For each commit (oldest to newest), creates a temporary working copy,
 # runs the formatter, and squashes the result back into the original commit.
 #
 # Usage:
-#   jj fmt-branch                    # defaults to `cargo fmt`
-#   jj fmt-branch -- deno fmt        # custom formatter
-def main [...command: string] {
+#   jj fmt-branch                              # defaults to `trunk()..@ ~ empty()` with `cargo fmt`
+#   jj fmt-branch -r 'trunk()..main'           # custom revset
+#   jj fmt-branch -- deno fmt                   # custom formatter
+#   jj fmt-branch -r 'xyz..@' -- cargo fmt     # both
+def main [--revset (-r): string, ...command: string] {
     let cmd = if ($command | is-empty) { ["cargo", "fmt"] } else { $command }
+    let rev = if ($revset | is-empty) { 'trunk()..@ ~ empty()' } else { $revset }
 
-    # Get all commits from trunk to branch tip, oldest first.
+    # Get all commits in the revset, oldest first.
     # Change IDs are stable across rebases so we can collect upfront.
     let commits = (
-        jj log --no-pager --no-graph -r 'trunk()..@ ~ empty()' --template 'change_id.short() ++ "\n"' --reversed
+        jj log --no-pager --no-graph -r $rev --template 'change_id.short() ++ "\n"' --reversed
         | lines
         | where { $in != "" }
     )
