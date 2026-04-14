@@ -6,6 +6,7 @@ email = {{ .email | quote }}
 name = "Connor Fitzgerald"
 [aliases]
 abandon-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}\AppData\Roaming\jj\scripts\abandon-branch.nu']
+fmt-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}\AppData\Roaming\jj\scripts\fmt-branch.nu']
 log-gpg = ["log", "--config", "ui.show-cryptographic-signatures=true"]
 pr-diff = ["diff", "-f", "fork_point(@ | trunk())", "-t", "@"]
 update = ["rebase", "-s", "roots(trunk()..@)", "-d", "trunk()"]
