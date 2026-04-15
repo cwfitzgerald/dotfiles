@@ -21,11 +21,19 @@ concerns.
 
 ## Inputs — determine scope from context
 
-- **PR**: Use `jj pr-diff --git --no-pager` for the diff against trunk.
+- **PR (checked out locally)**: Save the diff to a temp file once, then
+  read from it as needed — do NOT call diff commands multiple times.
+  ```
+  jj pr-diff --git --no-pager > /tmp/pr-review.diff
+  ```
   Use `gh pr view` and `gh pr view --comments` to pull the full PR
   description and all commentary including self-review comments.
+- **PR (not checked out)**: Same approach, but fetch via `gh`:
+  ```
+  gh pr diff <number> > /tmp/pr-<number>.diff
+  ```
 - **Changeset**: Use `jj diff --git --no-pager -f <from> -t <to>` with
-  the revisions specified.
+  the revisions specified. For large diffs, write to a temp file first.
 - **Repository/subsystem**: Start from directory structure, build system,
   and key entry points.
 
@@ -56,13 +64,17 @@ $ARGUMENTS can specify a PR number, revision range, or subsystem path.
    verifying the invariants that actually matter?
 6. **Commentary summary**: Distill the PR/review discussion. What was
    debated? What's unresolved?
+7. **Review order** (mandatory): Provide an ordered reading plan.
+   - If the PR is structured for commit-by-commit review, list commits in
+     the recommended order.
+   - Otherwise, list files in the order I should read them, with a
+     one-line rationale for each explaining why it belongs at that position
+     (e.g., "defines the core trait other files depend on").
 
 ### Phase 3: Interactive review
 
 - **Ask me questions** before and during. Clarify my concerns, focus areas,
   and desired depth.
-- For large changesets, propose a **review order** — which files/commits to
-  read first for maximum understanding.
 - When I raise concerns, help me articulate them precisely for review
   comments.
 - Be direct and upfront. Don't hedge. If something looks wrong, say so.
