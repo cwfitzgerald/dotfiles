@@ -5,8 +5,8 @@ email = {{ .email | quote }}
 
 name = "Connor Fitzgerald"
 [aliases]
-abandon-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}\AppData\Roaming\jj\scripts\abandon-branch.nu']
-fmt-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}\AppData\Roaming\jj\scripts\fmt-branch.nu']
+abandon-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scripts/abandon-branch.nu']
+fmt-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scripts/fmt-branch.nu']
 log-gpg = ["log", "--config", "ui.show-cryptographic-signatures=true"]
 pr-diff = ["diff", "-f", "fork_point(@ | trunk())", "-t", "@"]
 update = ["rebase", "-s", "roots(trunk()..@)", "-d", "trunk()"]
@@ -29,8 +29,8 @@ behavior = "drop"
 backend = "ssh"
 
 [signing.backends.ssh]
-program = '{{ .chezmoi.homeDir }}\AppData\Local\Microsoft\WindowsApps\op-ssh-sign.exe'
-allowed-signers = '{{ .chezmoi.homeDir }}\.ssh\allowed_signers'
+program = "op-ssh-sign.exe"
+allowed-signers = '{{ .chezmoi.homeDir }}/.ssh/allowed_signers'
 
 [git]
 sign-on-push = true

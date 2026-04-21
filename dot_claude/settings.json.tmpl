@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File C:\\/Users/conno/.claude/hooks/notify.ps1 'Task completed' complete"
+            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/notify.ps1 'Task completed' complete"
           },
           {
             "type": "command",

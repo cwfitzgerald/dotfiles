@@ -12,6 +12,9 @@
 email = {{ $email | quote }}
 signingKey = {{ onepasswordRead (get $keys .chezmoi.hostname) | quote }}
 
+[onepassword]
+command = "op.exe"
+
 [edit]
 command = "code"
 args = ["--wait"]

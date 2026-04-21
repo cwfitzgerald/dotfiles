@@ -1,7 +1,9 @@
 [core]
 	editor = code --wait
 	autocrlf = false
+{{- if eq .chezmoi.os "windows" }}
 	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
+{{- end }}
 [user]
 	email = "{{ .email }}"
 	name = Connor Fitzgerald
@@ -9,8 +11,8 @@
 [gpg]
 	format = ssh
 [gpg "ssh"]
-	program = {{ .chezmoi.homeDir }}\\AppData\\Local\\Microsoft\\WindowsApps\\op-ssh-sign.exe
-	allowedSignersFile = {{ .chezmoi.homeDir }}\\.ssh\\allowed_signers
+	program = op-ssh-sign.exe
+	allowedSignersFile = {{ .chezmoi.homeDir }}/.ssh/allowed_signers
 [commit]
 	gpgsign = true
 [filter "lfs"]

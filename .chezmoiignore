@@ -1,1 +1,5 @@
 README.md
+{{- if ne .chezmoi.os "windows" }}
+AppData/**
+dot_claude/hooks/**
+{{- end }}
