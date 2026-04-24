@@ -36,6 +36,12 @@
       "WebFetch(domain:raw.githubusercontent.com)"
     ]
   },
+{{- $psh := "powershell" -}}
+{{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
+{{- if ne .chezmoi.os "windows" -}}
+{{- $psh = "powershell.exe" -}}
+{{- $hooksDir = "/mnt/c/Users/conno/.claude/hooks" -}}
+{{- end }}
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -43,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/caffeine.ps1 on"
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 on"
           }
         ]
       }
@@ -54,11 +60,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/notify.ps1 'Task completed' complete"
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/notify.ps1 'Task completed' complete"
           },
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/caffeine.ps1 off"
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 off"
           }
         ]
       }
@@ -69,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File {{ .chezmoi.homeDir }}/.claude/hooks/notify.ps1 'Needs input' input"
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/notify.ps1 'Needs input' input"
           }
         ]
       }
@@ -80,5 +86,6 @@
     "github@claude-plugins-official": true
   },
   "autoUpdatesChannel": "latest",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "defaultMode": "auto"
 }
