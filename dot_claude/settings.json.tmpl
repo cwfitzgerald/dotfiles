@@ -35,6 +35,7 @@
       "WebFetch(domain:microsoft.github.io)",
       "WebFetch(domain:raw.githubusercontent.com)"
     ]
+    "defaultMode": "auto"
   },
 {{- $psh := "powershell" -}}
 {{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
@@ -86,6 +87,5 @@
     "github@claude-plugins-official": true
   },
   "autoUpdatesChannel": "latest",
-  "skipAutoPermissionPrompt": true,
-  "defaultMode": "auto"
+  "skipAutoPermissionPrompt": true
 }
