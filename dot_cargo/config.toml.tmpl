@@ -1,8 +1,14 @@
+{{- if eq .chezmoi.os "windows" }}
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
 # rustflags = ["-C", "target-cpu=native"]
 
+{{ end -}}
 [registry]
 global-credential-providers = [
+{{- if eq .chezmoi.os "windows" }}
     "cargo:token-from-stdout op.exe read op://Private/crates.io/api-key",
+{{- else }}
+    "cargo:token-from-stdout op read op://Private/crates.io/api-key",
+{{- end }}
 ]
