@@ -29,7 +29,13 @@ behavior = "drop"
 backend = "ssh"
 
 [signing.backends.ssh]
+{{- if eq .chezmoi.os "windows" }}
 program = "op-ssh-sign.exe"
+{{- else if eq .chezmoi.os "darwin" }}
+program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+{{- else }}
+program = "op-ssh-sign"
+{{- end }}
 allowed-signers = '{{ .chezmoi.homeDir }}/.ssh/allowed_signers'
 
 [git]
