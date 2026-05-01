@@ -32,11 +32,11 @@ def --wrapped doctl [...args: string] {
 
 # Launch Claude Code against a local llama-server, isolated from upstream config.
 def local-claude [
-    ...rest                                      # passed through to claude
-    --url: string = "http://192.168.1.186:8001"  # llama-server base URL
-    --model: string = "unsloth/Qwen3.6-35B-A3B"  # must match --alias on llama-server
-    --token: string = "sk-local"                 # must match --api-key on llama-server
-    --config-dir: string = "~/.claude-local"     # isolated config so upstream is untouched
+    args: list<string> = []                      # claude args as a list
+    --url: string = "http://127.0.0.1:8001"
+    --model: string = "local-glm"
+    --token: string = "sk-local"
+    --config-dir: string = "~/.claude-local"
 ] {
     let cfg = ($config_dir | path expand)
     mkdir $cfg
@@ -49,6 +49,6 @@ def local-claude [
         CLAUDE_CODE_ATTRIBUTION_HEADER: "0"
         CLAUDE_CONFIG_DIR: $cfg
     } {
-        ^claude ...$rest
+        ^claude ...$args
     }
 }
