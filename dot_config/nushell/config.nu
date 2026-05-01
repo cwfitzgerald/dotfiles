@@ -29,3 +29,26 @@ $env.DIGITALOCEAN_ACCESS_TOKEN = "op://Infrastructure/Digital Ocean/credential"
 def --wrapped doctl [...args: string] {
     op run -- doctl ...$args
 }
+
+# Launch Claude Code against a local llama-server, isolated from upstream config.
+def local-claude [
+    ...rest                                      # passed through to claude
+    --url: string = "http://192.168.1.186:8001"  # llama-server base URL
+    --model: string = "unsloth/Qwen3.6-35B-A3B"  # must match --alias on llama-server
+    --token: string = "sk-local"                 # must match --api-key on llama-server
+    --config-dir: string = "~/.claude-local"     # isolated config so upstream is untouched
+] {
+    let cfg = ($config_dir | path expand)
+    mkdir $cfg
+
+    with-env {
+        ANTHROPIC_BASE_URL: $url
+        ANTHROPIC_AUTH_TOKEN: $token
+        ANTHROPIC_API_KEY: $token
+        ANTHROPIC_MODEL: $model
+        CLAUDE_CODE_ATTRIBUTION_HEADER: "0"
+        CLAUDE_CONFIG_DIR: $cfg
+    } {
+        ^claude ...$rest
+    }
+}
