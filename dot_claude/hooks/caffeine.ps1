@@ -1,7 +1,7 @@
 param(
     [ValidateSet("on", "off")]
     [string]$Action,
-    [int]$TimeoutMinutes = 30
+    [int]$TimeoutMinutes = 70
 )
 
 $PidFile = [System.IO.Path]::Combine($env:TEMP, "claude-caffeine.pid")
