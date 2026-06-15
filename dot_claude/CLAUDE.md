@@ -15,3 +15,5 @@ I want to be in control and produce very high quality work, so ask many question
 You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
 
 Always use foreground agents, or else you will get permissions issues.
+
+My `~/.claude` config (`CLAUDE.md`, `settings.json`, `skills/`, `hooks/`) is managed by chezmoi; source is at `~/.local/share/chezmoi/dot_claude/`. Edit the source and run `chezmoi apply`, or `chezmoi add <target-path>` to bring an existing target file under management — don't hand-edit managed targets, they'll drift. chezmoi auto-commits and pushes to my dotfiles repo, so adding/editing managed files publishes them.
