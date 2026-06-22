@@ -12,3 +12,11 @@
     stripComponents = 4
     include = ["*/.claude/skills/agent-review/**"]
     refreshPeriod = "168h"
+
+[".pi/agent/skills/agent-review"]
+    type = "archive"
+    url = "https://github.com/cwfitzgerald/agent-review-helper/archive/refs/heads/trunk.tar.gz"
+    exact = true
+    stripComponents = 4
+    include = ["*/.claude/skills/agent-review/**"]
+    refreshPeriod = "168h"
