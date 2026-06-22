@@ -92,9 +92,6 @@
           "PackageIdentifier": "Rustlang.Rustup"
         },
         {
-          "PackageIdentifier": "Schniz.fnm"
-        },
-        {
           "PackageIdentifier": "sharkdp.fd"
         },
         {
