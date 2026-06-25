@@ -185,7 +185,7 @@ function showSessionInfo(ctx: ExtensionContext): Promise<void> {
 		return {
 			render(width: number): string[] {
 				const horizontal = theme.fg("border", "─".repeat(Math.max(0, width)));
-				const body = content.flatMap((line) => (line ? wrapTextWithAnsi(line, Math.max(1, width)) : [""]));
+				const body = content.split("\n").flatMap((line) => (line ? wrapTextWithAnsi(line, Math.max(1, width)) : [""]));
 				return [horizontal, ...body.map((line) => truncateToWidth(line, width)), horizontal];
 			},
 			invalidate() {},
