@@ -1,7 +1,7 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { Key, matchesKey, truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
+import { CustomEditor, type ExtensionAPI, type ExtensionContext, type KeybindingsManager } from "@earendil-works/pi-coding-agent";
+import { Key, matchesKey, truncateToWidth, visibleWidth, wrapTextWithAnsi, type EditorTheme, type TUI } from "@earendil-works/pi-tui";
 
 const LEGACY_STATUS_KEY = "context-usage";
 
@@ -200,16 +200,37 @@ function showSessionInfo(ctx: ExtensionContext): Promise<void> {
 	});
 }
 
-export default function (pi: ExtensionAPI) {
-	pi.registerCommand("session", {
-		description: "Show session info and stats with token pseudo-cost breakdown",
-		handler: async (_args, ctx) => {
-			await showSessionInfo(ctx);
-		},
-	});
+class SessionInterceptEditor extends CustomEditor {
+	private submitHandler: ((text: string) => void) | undefined;
 
-	pi.on("session_start", (_event, ctx) => {
+	constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager, private readonly ctx: ExtensionContext) {
+		super(tui, theme, keybindings);
+	}
+
+	get onSubmit(): ((text: string) => void) | undefined {
+		return this.submitHandler;
+	}
+
+	set onSubmit(handler: ((text: string) => void) | undefined) {
+		this.submitHandler = handler
+			? (text: string) => {
+					if (text.trim() === "/session") {
+						this.setText("");
+						void showSessionInfo(this.ctx);
+						return;
+					}
+					handler(text);
+				}
+			: undefined;
+	}
+}
+
+export default function (_pi: ExtensionAPI) {
+	_pi.on("session_start", (_event, ctx) => {
 		ctx.ui.setStatus(LEGACY_STATUS_KEY, undefined);
+		if (!ctx.ui.getEditorComponent()) {
+			ctx.ui.setEditorComponent((tui, theme, keybindings) => new SessionInterceptEditor(tui, theme, keybindings, ctx));
+		}
 
 		ctx.ui.setFooter((tui, theme, footerData) => {
 			const unsubscribeBranch = footerData.onBranchChange(() => tui.requestRender());
@@ -279,7 +300,7 @@ export default function (pi: ExtensionAPI) {
 					const modelName = ctx.model?.id || "no-model";
 					let rightSideWithoutProvider = modelName;
 					if (ctx.model?.reasoning) {
-						const thinkingLevel = pi.getThinkingLevel();
+						const thinkingLevel = _pi.getThinkingLevel();
 						rightSideWithoutProvider =
 							thinkingLevel === "off" ? `${modelName} • thinking off` : `${modelName} • ${thinkingLevel}`;
 					}
