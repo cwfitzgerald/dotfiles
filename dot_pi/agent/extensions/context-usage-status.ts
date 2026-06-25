@@ -205,6 +205,8 @@ class SessionInterceptEditor extends CustomEditor {
 
 	constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager, private readonly ctx: ExtensionContext) {
 		super(tui, theme, keybindings);
+		// Base Editor creates an own onSubmit field; remove it so our accessor below can intercept submissions.
+		delete (this as { onSubmit?: (text: string) => void }).onSubmit;
 	}
 
 	get onSubmit(): ((text: string) => void) | undefined {
@@ -228,9 +230,7 @@ class SessionInterceptEditor extends CustomEditor {
 export default function (_pi: ExtensionAPI) {
 	_pi.on("session_start", (_event, ctx) => {
 		ctx.ui.setStatus(LEGACY_STATUS_KEY, undefined);
-		if (!ctx.ui.getEditorComponent()) {
-			ctx.ui.setEditorComponent((tui, theme, keybindings) => new SessionInterceptEditor(tui, theme, keybindings, ctx));
-		}
+		ctx.ui.setEditorComponent((tui, theme, keybindings) => new SessionInterceptEditor(tui, theme, keybindings, ctx));
 
 		ctx.ui.setFooter((tui, theme, footerData) => {
 			const unsubscribeBranch = footerData.onBranchChange(() => tui.requestRender());
