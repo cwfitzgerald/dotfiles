@@ -1,9 +1,32 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { Key, matchesKey, truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 
 const LEGACY_STATUS_KEY = "context-usage";
+
+type CostBreakdown = {
+	input: number;
+	output: number;
+	cacheRead: number;
+	cacheWrite: number;
+	total: number;
+};
+
+type TokenBreakdown = CostBreakdown;
+
+type SessionStats = {
+	sessionFile: string | undefined;
+	sessionId: string;
+	name: string | undefined;
+	userMessages: number;
+	assistantMessages: number;
+	toolCalls: number;
+	toolResults: number;
+	totalMessages: number;
+	tokens: TokenBreakdown;
+	cost: CostBreakdown;
+};
 
 function sanitizeStatusText(text: string): string {
 	return text.replace(/[\r\n\t]/g, " ").replace(/ +/g, " ").trim();
@@ -28,6 +51,18 @@ function formatCompact(count: number): string {
 	}
 
 	return `${sign}${rounded}${units[unitIndex]}`;
+}
+
+function formatInteger(count: number): string {
+	return Math.round(count).toLocaleString();
+}
+
+function formatCost(cost: number): string {
+	return `$${cost.toFixed(4)}`;
+}
+
+function formatTokenCost(tokens: number, cost: number): string {
+	return `${formatInteger(tokens)} (${formatCost(cost)})`;
 }
 
 function formatCwdForFooter(cwd: string, home: string | undefined): string {
@@ -58,7 +93,121 @@ function formatContext(ctx: ExtensionContext, autoCompactEnabled: boolean): { te
 	return { text, severity };
 }
 
+function getSessionStats(ctx: ExtensionContext): SessionStats {
+	let userMessages = 0;
+	let assistantMessages = 0;
+	let toolCalls = 0;
+	let toolResults = 0;
+	const tokens: TokenBreakdown = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 };
+	const cost: CostBreakdown = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 };
+
+	for (const entry of ctx.sessionManager.getBranch()) {
+		if (entry.type !== "message") continue;
+
+		const message = entry.message;
+		if (message.role === "user") {
+			userMessages++;
+		} else if (message.role === "assistant") {
+			assistantMessages++;
+			const assistant = message as AssistantMessage;
+			toolCalls += assistant.content.filter((content) => content.type === "toolCall").length;
+
+			tokens.input += assistant.usage.input ?? 0;
+			tokens.output += assistant.usage.output ?? 0;
+			tokens.cacheRead += assistant.usage.cacheRead ?? 0;
+			tokens.cacheWrite += assistant.usage.cacheWrite ?? 0;
+
+			cost.input += assistant.usage.cost?.input ?? 0;
+			cost.output += assistant.usage.cost?.output ?? 0;
+			cost.cacheRead += assistant.usage.cost?.cacheRead ?? 0;
+			cost.cacheWrite += assistant.usage.cost?.cacheWrite ?? 0;
+			cost.total += assistant.usage.cost?.total ?? 0;
+		} else if (message.role === "toolResult") {
+			toolResults++;
+		}
+	}
+
+	tokens.total = tokens.input + tokens.output + tokens.cacheRead + tokens.cacheWrite;
+	if (cost.total === 0) cost.total = cost.input + cost.output + cost.cacheRead + cost.cacheWrite;
+
+	return {
+		sessionFile: ctx.sessionManager.getSessionFile(),
+		sessionId: ctx.sessionManager.getSessionId(),
+		name: ctx.sessionManager.getSessionName(),
+		userMessages,
+		assistantMessages,
+		toolCalls,
+		toolResults,
+		totalMessages: userMessages + assistantMessages + toolResults,
+		tokens,
+		cost,
+	};
+}
+
+function buildSessionInfo(ctx: ExtensionContext): string {
+	const stats = getSessionStats(ctx);
+	const theme = ctx.ui.theme;
+	const lines: string[] = [];
+
+	lines.push(theme.bold("Session Info"), "");
+	if (stats.name) lines.push(`${theme.fg("dim", "Name:")} ${stats.name}`);
+	lines.push(`${theme.fg("dim", "File:")} ${stats.sessionFile ?? "In-memory"}`);
+	lines.push(`${theme.fg("dim", "ID:")} ${stats.sessionId}`);
+	lines.push("");
+
+	lines.push(theme.bold("Messages"));
+	lines.push(`${theme.fg("dim", "User:")} ${stats.userMessages}`);
+	lines.push(`${theme.fg("dim", "Assistant:")} ${stats.assistantMessages}`);
+	lines.push(`${theme.fg("dim", "Tool Calls:")} ${stats.toolCalls}`);
+	lines.push(`${theme.fg("dim", "Tool Results:")} ${stats.toolResults}`);
+	lines.push(`${theme.fg("dim", "Total:")} ${stats.totalMessages}`);
+	lines.push("");
+
+	lines.push(theme.bold("Tokens (pseudo-cost)"));
+	lines.push(theme.fg("dim", "Input:") + ` ${formatTokenCost(stats.tokens.input, stats.cost.input)}`);
+	lines.push(theme.fg("dim", "Output:") + ` ${formatTokenCost(stats.tokens.output, stats.cost.output)}`);
+	if (stats.tokens.cacheRead > 0 || stats.cost.cacheRead > 0) {
+		lines.push(theme.fg("dim", "Cache Read:") + ` ${formatTokenCost(stats.tokens.cacheRead, stats.cost.cacheRead)}`);
+	}
+	if (stats.tokens.cacheWrite > 0 || stats.cost.cacheWrite > 0) {
+		lines.push(theme.fg("dim", "Cache Write:") + ` ${formatTokenCost(stats.tokens.cacheWrite, stats.cost.cacheWrite)}`);
+	}
+	lines.push(theme.fg("dim", "Total:") + ` ${formatTokenCost(stats.tokens.total, stats.cost.total)}`);
+	lines.push("");
+	lines.push(theme.fg("dim", "Esc/Enter close"));
+
+	return lines.join("\n");
+}
+
+function showSessionInfo(ctx: ExtensionContext): Promise<void> {
+	return ctx.ui.custom<void>((tui, theme, _keybindings, done) => {
+		const content = buildSessionInfo(ctx);
+		return {
+			render(width: number): string[] {
+				const horizontal = theme.fg("border", "─".repeat(Math.max(0, width)));
+				const body = content.flatMap((line) => (line ? wrapTextWithAnsi(line, Math.max(1, width)) : [""]));
+				return [horizontal, ...body.map((line) => truncateToWidth(line, width)), horizontal];
+			},
+			invalidate() {},
+			handleInput(data: string) {
+				if (matchesKey(data, Key.escape) || matchesKey(data, Key.enter) || matchesKey(data, Key.ctrl("c"))) {
+					done();
+					return;
+				}
+				tui.requestRender();
+			},
+		};
+	});
+}
+
 export default function (pi: ExtensionAPI) {
+	pi.registerCommand("session", {
+		description: "Show session info and stats with token pseudo-cost breakdown",
+		handler: async (_args, ctx) => {
+			await showSessionInfo(ctx);
+		},
+	});
+
 	pi.on("session_start", (_event, ctx) => {
 		ctx.ui.setStatus(LEGACY_STATUS_KEY, undefined);
 
