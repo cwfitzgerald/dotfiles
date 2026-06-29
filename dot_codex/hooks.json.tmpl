@@ -1,0 +1,40 @@
+{{- if or (eq .chezmoi.os "windows") (eq .chezmoi.os "linux") -}}
+{{- $psh := "powershell" -}}
+{{- $hooksDir := printf "%s/.codex/hooks" .chezmoi.homeDir -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{- $psh = "powershell.exe" -}}
+{{- $hooksDir = "/mnt/c/Users/conno/.codex/hooks" -}}
+{{- end -}}
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/caffeine.ps1' on"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/notify.ps1' 'Task completed' complete"
+          },
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/caffeine.ps1' off"
+          }
+        ]
+      }
+    ]
+  }
+}
+{{- else -}}
+{
+  "hooks": {}
+}
+{{- end }}
