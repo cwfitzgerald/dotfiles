@@ -20,3 +20,19 @@
     stripComponents = 4
     include = ["*/.claude/skills/agent-review/**"]
     refreshPeriod = "168h"
+
+[".claude/skills/native-profile"]
+    type = "archive"
+    url = "https://github.com/cwfitzgerald/native-profile/archive/refs/heads/trunk.tar.gz"
+    exact = true
+    stripComponents = 4
+    include = ["*/.claude/skills/native-profile/**"]
+    refreshPeriod = "168h"
+
+[".pi/agent/skills/native-profile"]
+    type = "archive"
+    url = "https://github.com/cwfitzgerald/native-profile/archive/refs/heads/trunk.tar.gz"
+    exact = true
+    stripComponents = 4
+    include = ["*/.claude/skills/native-profile/**"]
+    refreshPeriod = "168h"
