@@ -2,6 +2,8 @@ I use `jj` for version control. You have permission to access `jj diff --git --n
 
 When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
 
+When creating a worktree (`jj workspace add` or `git worktree`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. Make sure `.worktrees/` is ignored first (add it to `.git/info/exclude` if it isn't already) so the outer workspace doesn't try to snapshot the nested worktree.
+
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
 Always use `cargo nextest` to run tests if the project does not have specific instructions. Favor `cargo clippy` over `cargo check`. Always use LF line endings.

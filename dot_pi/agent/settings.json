@@ -3,5 +3,8 @@
   "theme": "dark",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "medium"
+  "defaultThinkingLevel": "high",
+  "packages": [
+    "npm:pi-caveman@1.0.7"
+  ]
 }
