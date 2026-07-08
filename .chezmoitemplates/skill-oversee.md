@@ -136,17 +136,23 @@ doing later.
 ## Harness specifics
 
 {{ if eq .harness "claude" -}}
-- Spawn subagents with the Agent tool, and always pass an explicit `model`
-  — you are running as fable, and fable oversees rather than executes.
-  Pick the tier by the work item's difficulty:
+- Spawn subagents with the Agent tool, and always pass an explicit `model`.
+  You choose the model freely per work item — match the tier to the item's
+  difficulty rather than defaulting everything to one model:
   - `model: "opus"` for serious work items and anything needing critical
     thinking: non-trivial implementation, debugging, design-sensitive
-    research, and the fresh-eyes review.
-  - `model: "sonnet"` or `model: "haiku"` for simple, well-specified
-    tasks: mechanical edits, renames, running tests and reporting results,
-    straightforward "find where X is defined" lookups.
-  - When in doubt, use opus — a failed cheap agent costs more than a
-    successful expensive one.
+    research, architectural judgment, and the fresh-eyes review.
+  - `model: "sonnet"` as the workhorse for moderate, well-scoped tasks:
+    routine implementation, standard research, and code reading that needs
+    some judgment but not deep reasoning. A good default when a task is
+    neither hard nor trivial.
+  - `model: "haiku"` for cheap, fast, mechanical work whose output you can
+    verify at a glance: running tests and reporting results, simple renames,
+    straightforward "find where X is defined" lookups, file/state checks.
+  - When in doubt between two tiers, pick the higher one — a failed cheap
+    agent costs more than a successful expensive one.
+  - Never use `model: "fable"` unless the user has explicitly asked for it;
+    fable is reserved for orchestration, not delegated work.
 - Use `subagent_type: "Explore"` for read-only research when it fits;
   `"general-purpose"` for everything else.
 - Foreground only: never set `run_in_background` (it causes permission
