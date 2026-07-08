@@ -45,6 +45,17 @@
 {{- $hooksDir = "/mnt/c/Users/conno/.claude/hooks" -}}
 {{- end }}
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 reset"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "",
@@ -56,28 +67,35 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 acquire"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 release"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/notify.ps1 'Task completed' complete"
-          },
-          {
-            "type": "command",
             "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 off"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/notify.ps1 'Needs input' input"
           }
         ]
       }
