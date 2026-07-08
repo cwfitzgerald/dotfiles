@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("on", "off", "acquire", "release", "reset")]
+    [ValidateSet("on", "off", "acquire", "release", "reset", "status")]
     [string]$Action,
     [int]$TimeoutMinutes = 90
 )
@@ -22,6 +22,15 @@ function Get-Count {
 function Set-Count([int]$n) {
     if ($n -lt 0) { $n = 0 }
     $n | Set-Content $CountFile
+}
+
+function Get-CaffeinePid {
+    if (Test-Path $PidFile) {
+        $raw = Get-Content $PidFile -ErrorAction SilentlyContinue
+        $n = 0
+        if ([int]::TryParse($raw, [ref]$n)) { return $n }
+    }
+    return 0
 }
 
 function Stop-Caffeine {
@@ -90,5 +99,25 @@ switch ($Action) {
     "reset" {
         Set-Count 0
         Stop-Caffeine
+    }
+    # Report current state: enabled/disabled, the background-agent count, and
+    # whether the recorded PID is actually still alive (detects stale pid files).
+    "status" {
+        $count = Get-Count
+        $cPid  = Get-CaffeinePid
+        $alive = $false
+        if ($cPid -gt 0) {
+            $alive = [bool](Get-Process -Id $cPid -ErrorAction SilentlyContinue)
+        }
+
+        if ($alive) {
+            Write-Output "caffeine: ENABLED (keeping awake)"
+            Write-Output "  pid:   $cPid (running)"
+        } elseif ($cPid -gt 0) {
+            Write-Output "caffeine: DISABLED (stale pid file; process $cPid not running)"
+        } else {
+            Write-Output "caffeine: DISABLED (no pid file)"
+        }
+        Write-Output "  count: $count background agent(s) pinned"
     }
 }
