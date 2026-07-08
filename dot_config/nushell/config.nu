@@ -52,3 +52,10 @@ def local-claude [
         ^claude ...$args
     }
 }
+
+# Control the sleep-preventer hook. Passes args straight through to the script,
+# so: `caffeine status`, `caffeine on`, `caffeine off`, `caffeine reset`, etc.
+def --wrapped caffeine [...args: string] {
+    let script = ($nu.home-dir | path join ".claude" "hooks" "caffeine.ps1")
+    ^powershell -NoProfile -File $script ...$args
+}
