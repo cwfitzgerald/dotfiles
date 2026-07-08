@@ -16,6 +16,6 @@ I want to be in control and produce very high quality work, so ask many question
 
 You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
 
-Always use foreground agents, or else you will get permissions issues.
-
 My global assistant config is managed by chezmoi. Shared instructions live in `~/.local/share/chezmoi/.chezmoitemplates/agent-instructions.md` and are rendered to `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. Claude hooks/settings are sourced from `~/.local/share/chezmoi/dot_claude/`, Codex hooks and stable config are sourced from `~/.local/share/chezmoi/dot_codex/`, and Pi agent config is sourced from `~/.local/share/chezmoi/dot_pi/`. Edit the chezmoi source and run `chezmoi apply`, or `chezmoi add <target-path>` to bring an existing target file under management. Do not hand-edit managed targets; they will drift. Chezmoi auto-commits and pushes to my dotfiles repo, so adding/editing managed files publishes them.
+
+Any change to Claude, Codex, `jj`, or other dev-tool configuration (instructions, hooks, settings, aliases, ignore rules, etc.) must be made through chezmoi — edit the chezmoi source (or `chezmoi add` the target first) rather than the live config, so the change propagates to my other computers. If you find yourself about to hand-edit a config file that isn't yet managed by chezmoi, bring it under chezmoi management instead.

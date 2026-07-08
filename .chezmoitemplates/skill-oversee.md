@@ -155,8 +155,6 @@ doing later.
     fable is reserved for orchestration, not delegated work.
 - Use `subagent_type: "Explore"` for read-only research when it fits;
   `"general-purpose"` for everything else.
-- Foreground only: never set `run_in_background` (it causes permission
-  issues).
 - To run subagents in parallel, issue the multiple Agent calls in a single
   message.
 - Do not use the Workflow tool here — the point of this skill is that you
@@ -165,6 +163,5 @@ doing later.
 {{- if eq .harness "codex" -}}
 - Spawn workers with the native subagent mechanism. No model override is
   needed; the default worker model is fine.
-- Run subagents in the foreground, in parallel only per the disjoint-scope
-  rule above.
+- Run subagents in parallel only per the disjoint-scope rule above.
 {{- end }}
