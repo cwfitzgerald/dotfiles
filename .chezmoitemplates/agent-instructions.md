@@ -30,5 +30,5 @@ When delegating work to subagents via the Agent tool, pass an explicit `model` a
 
 Use `subagent_type: "Explore"` for read-only research when it fits, and `"general-purpose"` for everything else.
 
-A subagent's `model` override is not preserved across a stall-and-resume: if a subagent's stream stalls and you restart it, the continuation silently falls back to the *session's* model rather than the tier it was spawned with (e.g. an opus implementation agent that stalls will finish on fable if the main loop is fable). So whenever you resume or restart a stalled subagent, always re-specify the same `model` override it was originally spawned with.
+A subagent's `model` override is not preserved across a stall-and-resume: always re-specify the same `model` override it was originally spawned with.
 {{- end }}
