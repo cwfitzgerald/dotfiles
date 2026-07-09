@@ -1,1 +1,1 @@
-{{ template "agent-instructions.md" . -}}
+{{ template "agent-instructions.md" (merge (dict "harness" "claude") .) -}}

@@ -19,3 +19,14 @@ You have access to the `gh` cli. Use it for read-only purposes, unless explicitl
 My global assistant config is managed by chezmoi. Shared instructions live in `~/.local/share/chezmoi/.chezmoitemplates/agent-instructions.md` and are rendered to `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. Claude hooks/settings are sourced from `~/.local/share/chezmoi/dot_claude/`, Codex hooks and stable config are sourced from `~/.local/share/chezmoi/dot_codex/`, and Pi agent config is sourced from `~/.local/share/chezmoi/dot_pi/`. Edit the chezmoi source and run `chezmoi apply`, or `chezmoi add <target-path>` to bring an existing target file under management. Do not hand-edit managed targets; they will drift. Chezmoi auto-commits and pushes to my dotfiles repo, so adding/editing managed files publishes them.
 
 Any change to Claude, Codex, `jj`, or other dev-tool configuration (instructions, hooks, settings, aliases, ignore rules, etc.) must be made through chezmoi — edit the chezmoi source (or `chezmoi add` the target first) rather than the live config, so the change propagates to my other computers. If you find yourself about to hand-edit a config file that isn't yet managed by chezmoi, bring it under chezmoi management instead.
+{{ if eq .harness "claude" }}
+When delegating work to subagents via the Agent tool, pass an explicit `model` and match the tier to the work item's difficulty rather than defaulting everything to one model:
+
+- `model: "opus"` for serious work and anything needing critical thinking: non-trivial implementation, debugging, design-sensitive research, architectural judgment, and fresh-eyes review.
+- `model: "sonnet"` as the workhorse for moderate, well-scoped tasks: routine implementation, standard research, and code reading that needs some judgment but not deep reasoning — a good default when a task is neither hard nor trivial.
+- `model: "haiku"` for cheap, fast, mechanical work whose output I can verify at a glance: running tests and reporting results, simple renames, straightforward "find where X is defined" lookups, file/state checks.
+- When in doubt between two tiers, pick the higher one — a failed cheap agent costs more than a successful expensive one.
+- Never use `model: "fable"` unless I explicitly ask; fable is reserved for orchestration, not delegated work.
+
+Use `subagent_type: "Explore"` for read-only research when it fits, and `"general-purpose"` for everything else.
+{{- end }}
