@@ -6,6 +6,10 @@ When creating a worktree (`jj workspace add` or `git worktree`), place it inside
 
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
+{{ if eq .harness "codex" }}
+When running `jj` commands in Codex, always use `sandbox_permissions: "require_escalated"` because `jj` needs access to home-directory configuration and state.
+{{- end }}
+
 Always use `cargo nextest` to run tests if the project does not have specific instructions. Favor `cargo clippy` over `cargo check`. Always use LF line endings.
 
 Avoid the `#[path = "..."]` attribute unless there is genuinely no alternative. For sharing helper modules across Rust integration tests without generating extra test binaries, prefer `autotests = false` in `Cargo.toml` plus an explicit `[[test]]` entry, and place helper `.rs` files as siblings of the test root reached by plain `mod foo;`.
