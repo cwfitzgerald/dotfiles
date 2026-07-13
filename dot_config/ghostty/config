@@ -1,9 +1,10 @@
 # Ghostty configuration (managed via chezmoi: dot_config/ghostty/config)
 
-# Launch nushell, but via a login zsh so it inherits the full login env
-# (PATH additions, VULKAN_SDK, VK_DRIVER_FILES, RUSTC_WRAPPER) from
-# .zprofile/.zshenv. Launching nu directly would give it only /usr/bin:/bin.
-command = /bin/zsh --login -c 'exec /Users/connor/.cargo/bin/nu'
+# Launch nushell, but via a login + interactive zsh so it inherits the full
+# env: .zprofile/.zshenv give PATH additions + VULKAN_SDK/VK_DRIVER_FILES/
+# RUSTC_WRAPPER, and .zshrc (interactive-only) adds llvm to PATH. zsh then
+# execs nu. Launching nu directly would give it only /usr/bin:/bin.
+command = /bin/zsh --login --interactive -c 'exec /Users/connor/.cargo/bin/nu'
 
 # nu is not in Ghostty's shell-integration list, so a surface running nu would
 # otherwise always prompt on close. Don't confirm on close.
