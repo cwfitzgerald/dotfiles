@@ -37,12 +37,12 @@
     ],
     "defaultMode": "auto"
   },
-{{- if or (eq .chezmoi.os "windows") (eq .chezmoi.os "linux") }}
-{{- $psh := "powershell" -}}
 {{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
-{{- if eq .chezmoi.os "linux" -}}
-{{- $psh = "powershell.exe" -}}
-{{- $hooksDir = "/mnt/c/Users/conno/.claude/hooks" -}}
+{{- $caffeine := printf "%s/caffeine.sh" $hooksDir -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{- $caffeine = printf "powershell -ExecutionPolicy Bypass -File %s/caffeine.ps1" $hooksDir -}}
+{{- else if eq .chezmoi.os "linux" -}}
+{{- $caffeine = "powershell.exe -ExecutionPolicy Bypass -File /mnt/c/Users/conno/.claude/hooks/caffeine.ps1" -}}
 {{- end }}
   "hooks": {
     "SessionStart": [
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 reset"
+            "command": "{{ $caffeine }} reset"
           }
         ]
       }
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 on"
+            "command": "{{ $caffeine }} on"
           }
         ]
       }
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 acquire"
+            "command": "{{ $caffeine }} acquire"
           }
         ]
       }
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 release"
+            "command": "{{ $caffeine }} release"
           }
         ]
       }
@@ -95,13 +95,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File {{ $hooksDir }}/caffeine.ps1 off"
+            "command": "{{ $caffeine }} off"
           }
         ]
       }
     ]
   },
-{{- end }}
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": false,
     "github@claude-plugins-official": true

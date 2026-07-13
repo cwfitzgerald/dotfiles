@@ -1,9 +1,13 @@
-{{- if or (eq .chezmoi.os "windows") (eq .chezmoi.os "linux") -}}
-{{- $psh := "powershell" -}}
 {{- $hooksDir := printf "%s/.codex/hooks" .chezmoi.homeDir -}}
-{{- if eq .chezmoi.os "linux" -}}
-{{- $psh = "powershell.exe" -}}
+{{- $caffeine := printf "'%s/caffeine.sh'" $hooksDir -}}
+{{- $notify := printf "'%s/notify.sh'" $hooksDir -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{- $caffeine = printf "powershell -ExecutionPolicy Bypass -File '%s/caffeine.ps1'" $hooksDir -}}
+{{- $notify = printf "powershell -ExecutionPolicy Bypass -File '%s/notify.ps1'" $hooksDir -}}
+{{- else if eq .chezmoi.os "linux" -}}
 {{- $hooksDir = "/mnt/c/Users/conno/.codex/hooks" -}}
+{{- $caffeine = printf "powershell.exe -ExecutionPolicy Bypass -File '%s/caffeine.ps1'" $hooksDir -}}
+{{- $notify = printf "powershell.exe -ExecutionPolicy Bypass -File '%s/notify.ps1'" $hooksDir -}}
 {{- end -}}
 {
   "hooks": {
@@ -12,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/caffeine.ps1' on"
+            "command": "{{ $caffeine }} on"
           }
         ]
       }
@@ -22,19 +26,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/notify.ps1' 'Task completed' complete"
+            "command": "{{ $notify }} 'Task completed' complete"
           },
           {
             "type": "command",
-            "command": "{{ $psh }} -ExecutionPolicy Bypass -File '{{ $hooksDir }}/caffeine.ps1' off"
+            "command": "{{ $caffeine }} off"
           }
         ]
       }
     ]
   }
 }
-{{- else -}}
-{
-  "hooks": {}
-}
-{{- end }}

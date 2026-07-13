@@ -1,8 +1,13 @@
 README.md
 {{- if ne .chezmoi.os "windows" }}
 AppData/**
-dot_claude/hooks/**
+Documents/**
+.claude/hooks/*.ps1
+.codex/hooks/*.ps1
 {{- end }}
 {{- if ne .chezmoi.os "darwin" }}
 Library/**
+.ssh/config
+.claude/hooks/*.sh
+.codex/hooks/*.sh
 {{- end }}

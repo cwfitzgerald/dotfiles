@@ -16,13 +16,14 @@
 #
 # You can remove these comments if you want or leave
 # them for future reference.
-$env.config.buffer_editor = ["code.cmd", "--wait"]
+$env.config.buffer_editor = [{{ if eq .chezmoi.os "windows" }}"code.cmd"{{ else }}"code"{{ end }}, "--wait"]
 $env.config.show_banner = false
-
+{{ if eq .chezmoi.os "windows" }}
 # Update all important winget packages
 def update-all [] {
     winget import -i ($nu.default-config-dir | path join "vcpkg.json")
 }
+{{- end }}
 
 $env.DIGITALOCEAN_ACCESS_TOKEN = "op://Infrastructure/Digital Ocean/credential"
 
@@ -55,7 +56,14 @@ def local-claude [
 
 # Control the sleep-preventer hook. Passes args straight through to the script,
 # so: `caffeine status`, `caffeine on`, `caffeine off`, `caffeine reset`, etc.
+{{ if eq .chezmoi.os "windows" -}}
 def --wrapped caffeine [...args: string] {
     let script = ($nu.home-dir | path join ".claude" "hooks" "caffeine.ps1")
     ^powershell -NoProfile -File $script ...$args
 }
+{{- else -}}
+def --wrapped caffeine [...args: string] {
+    let script = ($nu.home-dir | path join ".claude" "hooks" "caffeine.sh")
+    ^bash $script ...$args
+}
+{{- end }}
