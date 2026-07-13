@@ -5,7 +5,3 @@
 # RUSTC_WRAPPER, and .zshrc (interactive-only) adds llvm to PATH. zsh then
 # execs nu. Launching nu directly would give it only /usr/bin:/bin.
 command = /bin/zsh --login --interactive -c 'exec /Users/connor/.cargo/bin/nu'
-
-# nu is not in Ghostty's shell-integration list, so a surface running nu would
-# otherwise always prompt on close. Don't confirm on close.
-confirm-close-surface = false
