@@ -1,0 +1,8 @@
+# Ghostty configuration (managed via chezmoi: dot_config/ghostty/config)
+
+# Launch nushell directly.
+command = /Users/connor/.cargo/bin/nu
+
+# nu is not in Ghostty's shell-integration list, so a surface running nu would
+# otherwise always prompt on close. Don't confirm on close.
+confirm-close-surface = false
