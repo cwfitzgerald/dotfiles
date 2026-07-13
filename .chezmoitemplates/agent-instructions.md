@@ -8,6 +8,8 @@ When creating a worktree (`jj workspace add` or `git worktree`), place it inside
 
 {{ if eq .harness "codex" }}
 When running `jj` commands in Codex, always use `sandbox_permissions: "require_escalated"` because `jj` needs access to home-directory configuration and state.
+
+When running `gh` commands in Codex, always use `sandbox_permissions: "require_escalated"` because `gh` needs access outside the sandbox.
 {{- end }}
 
 Always use `cargo nextest` to run tests if the project does not have specific instructions. Favor `cargo clippy` over `cargo check`. Always use LF line endings.
