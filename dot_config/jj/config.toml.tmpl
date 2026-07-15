@@ -10,6 +10,7 @@ fmt-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scr
 log-gpg = ["log", "--config", "ui.show-cryptographic-signatures=true"]
 pr-diff = ["diff", "-f", "fork_point(@ | trunk())", "-t", "@"]
 update = ["rebase", "-s", "roots(trunk()..@)", "-d", "trunk()"]
+ws-rm = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scripts/ws-rm.nu']
 
 [revsets]
 log = """
