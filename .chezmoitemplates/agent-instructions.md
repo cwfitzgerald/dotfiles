@@ -20,7 +20,7 @@ When creating a workspace (aka worktree) (`jj workspace add`), place it inside t
 
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
-All commits made should pass linting and formatting. To run a command on every commit, use `jj run -r <revset>`.
+All commits made should pass linting and formatting. To run a command on every commit, use `jj run -r <revset> <command> <arg...>`. Each arg is passed through one at a time. If you need a shell, you must invoke the shell yourself.
 
 # Local Tooling
 
