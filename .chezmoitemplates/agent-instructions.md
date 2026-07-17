@@ -6,6 +6,10 @@ Always use `cargo nextest` to run tests if the project does not have specific in
 
 Avoid the `#[path = "..."]` attribute unless there is genuinely no alternative. For sharing helper modules across Rust integration tests without generating extra test binaries, prefer `autotests = false` in `Cargo.toml` plus an explicit `[[test]]` entry, and place helper `.rs` files as siblings of the test root reached by plain `mod foo;`.
 
+# Python
+
+Python 3 is installed and you have access to uv for project/script management.
+
 # Projects
 
 Project-local facts (testing conventions, build quirks, repo-specific workflows) belong in the project's `CLAUDE.md`/`AGENTS.md`, not in the auto-memory system. Reserve auto-memory for cross-project user/feedback facts.
