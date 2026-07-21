@@ -17,12 +17,25 @@ param(
 
 $Dir           = [System.IO.Path]::Combine($env:TEMP, "claude-caffeine")
 $KeeperPidFile = [System.IO.Path]::Combine($Dir, "keeper.pid")
+$LogFile       = [System.IO.Path]::Combine($Dir, "caffeine.log")
 $Interval      = 60    # keeper re-check cadence, seconds
 $StaleTtl      = 7200  # a hold is ignored this many seconds after its last refresh
 
 New-Item -ItemType Directory -Path $Dir -Force | Out-Null
 
 function Get-Now { [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() }
+
+# Append-only audit trail of every state transition, so a miscount can be
+# reconstructed and corrected after the fact.
+function Write-Log([string]$msg) {
+    $ts = [DateTimeOffset]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+    try {
+        if ((Test-Path $LogFile) -and ((Get-Item $LogFile).Length -gt 1MB)) {
+            Move-Item $LogFile "$LogFile.1" -Force
+        }
+        Add-Content -Path $LogFile -Value "$ts pid=$PID $msg" -Encoding UTF8
+    } catch { }
+}
 
 # The session id is provided by the hook harness as JSON on stdin. Read it at
 # script scope: inside a function `$input` is that function's own (empty)
@@ -101,7 +114,10 @@ function Test-KeeperAlive {
 
 function Stop-Keeper {
     $p = Get-KeeperPid
-    if ($p -gt 0) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }
+    if ($p -gt 0) {
+        Write-Log "keeper-kill pid=$p"
+        Stop-Process -Id $p -Force -ErrorAction SilentlyContinue
+    }
     Remove-Item $KeeperPidFile -Force -ErrorAction SilentlyContinue
 }
 
@@ -130,6 +146,11 @@ public class SleepPreventer {
 '
 `$dir     = "$Dir"
 `$pidFile = "$KeeperPidFile"
+`$logFile = "$LogFile"
+function Write-KLog([string]`$msg) {
+    `$ts = [DateTimeOffset]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+    try { Add-Content -Path `$logFile -Value "`$ts pid=`$PID `$msg" -Encoding UTF8 } catch { }
+}
 while (`$true) {
     `$now   = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     `$wants = `$false
@@ -138,6 +159,7 @@ while (`$true) {
         try { `$o = Get-Content `$f.FullName -Raw -ErrorAction Stop | ConvertFrom-Json } catch { continue }
         `$exp = [long]`$o.expiry
         if (`$now -ge `$exp) {
+            Write-KLog "keeper-sweep removed `$(`$f.Name) turn=`$(`$o.turn) bg=`$(`$o.bg)"
             Remove-Item `$f.FullName -Force -ErrorAction SilentlyContinue
             continue
         }
@@ -150,6 +172,7 @@ while (`$true) {
             [SleepPreventer]::ES_DISPLAY_REQUIRED) | Out-Null
     } else {
         [SleepPreventer]::SetThreadExecutionState([SleepPreventer]::ES_CONTINUOUS) | Out-Null
+        Write-KLog "keeper-exit (idle)"
         Remove-Item `$pidFile -Force -ErrorAction SilentlyContinue
         break
     }
@@ -162,6 +185,7 @@ while (`$true) {
         -ArgumentList "-NoProfile", "-EncodedCommand", $encoded `
         -WindowStyle Hidden -PassThru
     $proc.Id | Set-Content $KeeperPidFile
+    Write-Log "keeper-start pid=$($proc.Id)"
 }
 
 $sid  = Get-SessionId
@@ -174,39 +198,50 @@ $Mutex  = New-Object System.Threading.Mutex($false, "claude-caffeine-lock")
 $Locked = $false
 try { $Locked = $Mutex.WaitOne(10000) }
 catch [System.Threading.AbandonedMutexException] { $Locked = $true }
+if (-not $Locked) { Write-Log "lock-timeout action=$Action sid=$sid" }
 
 try {
 switch ($Action) {
     # Foreground turn started: mark this session active and ensure a keeper runs.
     "on" {
         $s = Read-Session $file
+        $prev = "turn=$($s.turn) bg=$($s.bg)"
         $s.turn = 1
         Write-Session $file $s
+        Write-Log "on sid=$sid $prev -> turn=$($s.turn) bg=$($s.bg)"
         Start-Keeper
     }
     # A background agent spawned: pin this session awake beyond the turn's end.
     "acquire" {
         $s = Read-Session $file
+        $prev = "turn=$($s.turn) bg=$($s.bg)"
         $s.bg = $s.bg + 1
         Write-Session $file $s
+        Write-Log "acquire sid=$sid $prev -> turn=$($s.turn) bg=$($s.bg)"
         Start-Keeper
     }
     # A background agent finished: drop its pin; sleep once nothing else wants awake.
     "release" {
         $s = Read-Session $file
+        $prev = "turn=$($s.turn) bg=$($s.bg)"
         $s.bg = [Math]::Max(0, $s.bg - 1)
         Write-Session $file $s
+        Write-Log "release sid=$sid $prev -> turn=$($s.turn) bg=$($s.bg)"
         Stop-KeeperIfIdle
     }
     # Foreground turn ended: clear active flag; sleep once no background agents remain.
     "off" {
         $s = Read-Session $file
+        $prev = "turn=$($s.turn) bg=$($s.bg)"
         $s.turn = 0
         Write-Session $file $s
+        Write-Log "off sid=$sid $prev -> turn=$($s.turn) bg=$($s.bg)"
         Stop-KeeperIfIdle
     }
     # New session: drop only this session's leftover state, then release if idle.
     "reset" {
+        $s = Read-Session $file
+        Write-Log "reset sid=$sid dropped turn=$($s.turn) bg=$($s.bg)"
         Remove-Item $file -Force -ErrorAction SilentlyContinue
         Stop-KeeperIfIdle
     }
@@ -227,6 +262,10 @@ switch ($Action) {
             $fresh = if ($now -lt $s.expiry) { "fresh" } else { "STALE" }
             $left  = [Math]::Max(0, $s.expiry - $now)
             Write-Output ("  {0}: turn={1} bg={2} ({3}, expiry in {4}s)" -f $f.Name, $s.turn, $s.bg, $fresh, $left)
+        }
+        if (Test-Path $LogFile) {
+            Write-Output "  recent log ($LogFile):"
+            Get-Content $LogFile -Tail 8 | ForEach-Object { Write-Output "    $_" }
         }
     }
 }

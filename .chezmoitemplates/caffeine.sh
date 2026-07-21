@@ -15,12 +15,22 @@ ACTION="${1:-status}"
 
 DIR="${TMPDIR:-/tmp}/claude-caffeine"
 KEEPER_PID_FILE="$DIR/keeper.pid"
+LOG_FILE="$DIR/caffeine.log"
 INTERVAL=60    # keeper re-check cadence, seconds
 STALE_TTL=7200 # a hold is ignored this many seconds after its last refresh
 
 mkdir -p "$DIR"
 
 now() { date +%s; }
+
+# Append-only audit trail of every state transition, so a miscount can be
+# reconstructed and corrected after the fact.
+log() {
+    if [ -f "$LOG_FILE" ] && [ "$(wc -c < "$LOG_FILE")" -gt 1048576 ]; then
+        mv -f "$LOG_FILE" "$LOG_FILE.1"
+    fi
+    printf '%s pid=%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$$" "$1" >> "$LOG_FILE"
+}
 
 # The session id is provided by the hook harness as JSON on stdin. Only read
 # when stdin is actually redirected (as it is under a hook); reading an
@@ -97,6 +107,7 @@ stop_keeper() {
     local p
     p=$(keeper_pid)
     if [ "$p" -gt 0 ]; then
+        log "keeper-kill pid=$p"
         kill "$p" 2>/dev/null
     fi
     rm -f "$KEEPER_PID_FILE"
@@ -112,6 +123,7 @@ start_keeper() {
     keeper_alive && return
     nohup bash "$0" __keeper </dev/null >/dev/null 2>&1 &
     printf '%s\n' $! > "$KEEPER_PID_FILE"
+    log "keeper-start pid=$!"
 }
 
 run_keeper() {
@@ -125,17 +137,19 @@ run_keeper() {
         for f in "$DIR"/sess-*.json; do
             [ -f "$f" ] || continue
             expiry=$(json_int "$f" expiry)
+            turn=$(json_int "$f" turn)
+            bg=$(json_int "$f" bg)
             if [ "$t" -ge "$expiry" ]; then
+                log "keeper-sweep removed $(basename "$f") turn=$turn bg=$bg"
                 rm -f "$f"
                 continue
             fi
-            turn=$(json_int "$f" turn)
-            bg=$(json_int "$f" bg)
             if [ "$turn" -eq 1 ] || [ "$bg" -gt 0 ]; then
                 wants=1
             fi
         done
         if [ "$wants" -eq 0 ]; then
+            log "keeper-exit (idle)"
             rm -f "$KEEPER_PID_FILE"
             break
         fi
@@ -153,6 +167,7 @@ lock_acquire() {
     until mkdir "$LOCK_DIR" 2>/dev/null; do
         tries=$((tries + 1))
         if [ "$tries" -ge 200 ]; then
+            log "lock-steal action=$ACTION sid=$SID"
             rm -rf "$LOCK_DIR"
             tries=0
         fi
@@ -171,28 +186,37 @@ esac
 case "$ACTION" in
     # Foreground turn started: mark this session active and ensure a keeper runs.
     on)
-        write_session "$FILE" 1 "$(json_int "$FILE" bg)"
+        prev_turn=$(json_int "$FILE" turn); prev_bg=$(json_int "$FILE" bg)
+        write_session "$FILE" 1 "$prev_bg"
+        log "on sid=$SID turn=$prev_turn bg=$prev_bg -> turn=1 bg=$prev_bg"
         start_keeper
         ;;
     # A background agent spawned: pin this session awake beyond the turn's end.
     acquire)
-        write_session "$FILE" "$(json_int "$FILE" turn)" "$(( $(json_int "$FILE" bg) + 1 ))"
+        prev_turn=$(json_int "$FILE" turn); prev_bg=$(json_int "$FILE" bg)
+        write_session "$FILE" "$prev_turn" "$((prev_bg + 1))"
+        log "acquire sid=$SID turn=$prev_turn bg=$prev_bg -> turn=$prev_turn bg=$((prev_bg + 1))"
         start_keeper
         ;;
     # A background agent finished: drop its pin; sleep once nothing else wants awake.
     release)
-        bg=$(( $(json_int "$FILE" bg) - 1 ))
+        prev_turn=$(json_int "$FILE" turn); prev_bg=$(json_int "$FILE" bg)
+        bg=$((prev_bg - 1))
         if [ "$bg" -lt 0 ]; then bg=0; fi
-        write_session "$FILE" "$(json_int "$FILE" turn)" "$bg"
+        write_session "$FILE" "$prev_turn" "$bg"
+        log "release sid=$SID turn=$prev_turn bg=$prev_bg -> turn=$prev_turn bg=$bg"
         stop_keeper_if_idle
         ;;
     # Foreground turn ended: clear active flag; sleep once no background agents remain.
     off)
-        write_session "$FILE" 0 "$(json_int "$FILE" bg)"
+        prev_turn=$(json_int "$FILE" turn); prev_bg=$(json_int "$FILE" bg)
+        write_session "$FILE" 0 "$prev_bg"
+        log "off sid=$SID turn=$prev_turn bg=$prev_bg -> turn=0 bg=$prev_bg"
         stop_keeper_if_idle
         ;;
     # New session: drop only this session's leftover state, then release if idle.
     reset)
+        log "reset sid=$SID dropped turn=$(json_int "$FILE" turn) bg=$(json_int "$FILE" bg)"
         rm -f "$FILE"
         stop_keeper_if_idle
         ;;
@@ -222,6 +246,10 @@ case "$ACTION" in
         done
         if [ "$found" -eq 0 ]; then
             echo "  (no active sessions)"
+        fi
+        if [ -f "$LOG_FILE" ]; then
+            echo "  recent log ($LOG_FILE):"
+            tail -n 8 "$LOG_FILE" | sed 's/^/    /'
         fi
         ;;
     *)
