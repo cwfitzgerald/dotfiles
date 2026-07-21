@@ -167,6 +167,15 @@ while (`$true) {
 $sid  = Get-SessionId
 $file = Get-SessionFile $sid
 
+# Parallel agent spawns fire concurrent hooks that race on the same session
+# file's read-modify-write; serialize actions under a named mutex. On timeout,
+# proceed unlocked -- a possible lost increment beats dropping the event.
+$Mutex  = New-Object System.Threading.Mutex($false, "claude-caffeine-lock")
+$Locked = $false
+try { $Locked = $Mutex.WaitOne(10000) }
+catch [System.Threading.AbandonedMutexException] { $Locked = $true }
+
+try {
 switch ($Action) {
     # Foreground turn started: mark this session active and ensure a keeper runs.
     "on" {
@@ -220,4 +229,8 @@ switch ($Action) {
             Write-Output ("  {0}: turn={1} bg={2} ({3}, expiry in {4}s)" -f $f.Name, $s.turn, $s.bg, $fresh, $left)
         }
     }
+}
+} finally {
+    if ($Locked) { $Mutex.ReleaseMutex() }
+    $Mutex.Dispose()
 }

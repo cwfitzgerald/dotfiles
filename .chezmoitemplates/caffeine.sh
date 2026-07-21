@@ -143,8 +143,30 @@ run_keeper() {
     done
 }
 
+# Parallel agent spawns fire concurrent hooks that race on the same session
+# file's read-modify-write; serialize actions under a mkdir lock (macOS has no
+# flock). After ~10s of waiting, steal the lock -- hook actions finish in
+# milliseconds, so an old lock means its holder crashed.
+LOCK_DIR="$DIR/.lock"
+lock_acquire() {
+    local tries=0
+    until mkdir "$LOCK_DIR" 2>/dev/null; do
+        tries=$((tries + 1))
+        if [ "$tries" -ge 200 ]; then
+            rm -rf "$LOCK_DIR"
+            tries=0
+        fi
+        sleep 0.05
+    done
+    trap 'rm -rf "$LOCK_DIR"' EXIT
+}
+
 SID=$(get_session_id)
 FILE=$(session_file "$SID")
+
+case "$ACTION" in
+    on | acquire | release | off | reset) lock_acquire ;;
+esac
 
 case "$ACTION" in
     # Foreground turn started: mark this session active and ensure a keeper runs.
