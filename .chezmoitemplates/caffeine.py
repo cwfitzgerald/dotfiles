@@ -1,8 +1,4 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.10"
-# dependencies = ["psutil"]
-# ///
+#!/usr/bin/env python3
 """Self-healing, multi-session keep-awake for agent hooks.
 
 Each agent session owns one state file under STATE_DIR describing whether it
@@ -24,18 +20,21 @@ only bridges the gap between an agent spawn and the next reconciling event.
 
 Wake backends: SetThreadExecutionState on Windows, caffeinate(8) on macOS.
 Elsewhere the keeper only tracks state and logs a warning.
+
+Stdlib only, and hooks must invoke it via pythonw on Windows: a console-
+subsystem interpreter spawned by a console-less hook harness allocates a
+visible console window on every event.
 """
 
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-
-import psutil
 
 STATE_DIR = Path(tempfile.gettempdir()) / "claude-caffeine"
 KEEPER_PID_FILE = STATE_DIR / "keeper.pid"
@@ -88,8 +87,9 @@ def log_payload(action: str, raw: str) -> None:
 
 def read_payload() -> dict:
     """The hook harness supplies event JSON on stdin. Only read when stdin is
-    redirected; a manual invocation from a terminal has none."""
-    if sys.stdin.isatty():
+    redirected; a manual invocation from a terminal has none, and pythonw
+    without one has no stdin at all."""
+    if sys.stdin is None or sys.stdin.isatty():
         return {}
     raw = sys.stdin.read()
     if raw.strip():
@@ -191,6 +191,32 @@ def release_lock() -> None:
 # ------------------------------------------------------------------- keeper
 
 
+def pid_exists(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+
+        query_limited, still_active = 0x1000, 259
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(query_limited, False, pid)
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            ok = kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return bool(ok) and code.value == still_active
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
 def keeper_pid() -> int:
     try:
         return int(KEEPER_PID_FILE.read_text().strip())
@@ -199,8 +225,7 @@ def keeper_pid() -> int:
 
 
 def keeper_alive() -> bool:
-    pid = keeper_pid()
-    return pid > 0 and psutil.pid_exists(pid)
+    return pid_exists(keeper_pid())
 
 
 def start_keeper() -> None:
@@ -211,11 +236,8 @@ def start_keeper() -> None:
     )
     cmd = [sys.executable, os.path.abspath(__file__), "__keeper"]
     if os.name == "nt":
-        flags = (
-            subprocess.DETACHED_PROCESS
-            | subprocess.CREATE_NEW_PROCESS_GROUP
-            | subprocess.CREATE_NO_WINDOW
-        )
+        # DETACHED_PROCESS: no console, so no window even from console python.
+        flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
         # Escape the caller's job object, else the keeper dies with the hook's
         # process tree; fall back for jobs that forbid breakaway.
         breakaway = 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
@@ -232,11 +254,11 @@ def start_keeper() -> None:
 
 def stop_keeper() -> None:
     pid = keeper_pid()
-    if pid > 0 and psutil.pid_exists(pid):
+    if pid_exists(pid):
         log(f"keeper-kill pid={pid}")
         try:
-            psutil.Process(pid).terminate()
-        except psutil.Error:
+            os.kill(pid, signal.SIGTERM)
+        except OSError:
             pass
     KEEPER_PID_FILE.unlink(missing_ok=True)
 
@@ -348,8 +370,9 @@ def print_status() -> None:
 
 def main() -> int:
     if len(sys.argv) != 2 or sys.argv[1] not in ACTIONS:
-        usage = "|".join(a for a in ACTIONS if a != "__keeper")
-        print(f"usage: caffeine.py [{usage}]", file=sys.stderr)
+        if sys.stderr:  # absent under pythonw
+            usage = "|".join(a for a in ACTIONS if a != "__keeper")
+            print(f"usage: caffeine.py [{usage}]", file=sys.stderr)
         return 1
     action = sys.argv[1]
     STATE_DIR.mkdir(parents=True, exist_ok=True)

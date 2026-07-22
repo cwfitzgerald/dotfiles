@@ -38,10 +38,14 @@
     "defaultMode": "auto"
   },
 {{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
-{{- $caffeine := printf "uv run --script %s/caffeine.py" $hooksDir -}}
-{{- if eq .chezmoi.os "linux" -}}
+{{- /* pythonw, not python: the hook harness spawns commands without a console,
+       and a console-subsystem child then flashes a new console window. */ -}}
+{{- $caffeine := printf "pythonw %s/caffeine.py" $hooksDir -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{- $caffeine = printf "python3 %s/caffeine.py" $hooksDir -}}
+{{- else if eq .chezmoi.os "linux" -}}
 {{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
-{{- $caffeine = "uv.exe run --script C:/Users/conno/.claude/hooks/caffeine.py" -}}
+{{- $caffeine = "pythonw.exe C:/Users/conno/.claude/hooks/caffeine.py" -}}
 {{- end }}
   "hooks": {
     "SessionStart": [

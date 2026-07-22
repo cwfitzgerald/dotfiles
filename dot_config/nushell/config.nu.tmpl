@@ -58,5 +58,5 @@ def local-claude [
 # so: `caffeine status`, `caffeine on`, `caffeine off`, `caffeine reset`, etc.
 def --wrapped caffeine [...args: string] {
     let script = ($nu.home-dir | path join ".claude" "hooks" "caffeine.py")
-    ^uv run --script $script ...$args
+    ^python3 $script ...$args
 }
