@@ -1,13 +1,12 @@
 {{- $hooksDir := printf "%s/.codex/hooks" .chezmoi.homeDir -}}
-{{- $caffeine := printf "'%s/caffeine.sh'" $hooksDir -}}
+{{- $caffeine := printf "uv run --script '%s/caffeine.py'" $hooksDir -}}
 {{- $notify := printf "'%s/notify.sh'" $hooksDir -}}
 {{- if eq .chezmoi.os "windows" -}}
-{{- $caffeine = printf "powershell -ExecutionPolicy Bypass -File '%s/caffeine.ps1'" $hooksDir -}}
 {{- $notify = printf "powershell -ExecutionPolicy Bypass -File '%s/notify.ps1'" $hooksDir -}}
 {{- else if eq .chezmoi.os "linux" -}}
-{{- $hooksDir = "/mnt/c/Users/conno/.codex/hooks" -}}
-{{- $caffeine = printf "powershell.exe -ExecutionPolicy Bypass -File '%s/caffeine.ps1'" $hooksDir -}}
-{{- $notify = printf "powershell.exe -ExecutionPolicy Bypass -File '%s/notify.ps1'" $hooksDir -}}
+{{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
+{{- $caffeine = "uv.exe run --script 'C:/Users/conno/.codex/hooks/caffeine.py'" -}}
+{{- $notify = "powershell.exe -ExecutionPolicy Bypass -File '/mnt/c/Users/conno/.codex/hooks/notify.ps1'" -}}
 {{- end -}}
 {
   "hooks": {

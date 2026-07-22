@@ -45,6 +45,10 @@ sign-on-push = true
 private-commits = "private_commits"
 
 [ui]
+{{- if eq .chezmoi.os "windows" }}
+editor = "code.cmd --wait"
+{{- else }}
 editor = "code --wait"
+{{- end }}
 default-command = "log"
 diff-editor = ":builtin"

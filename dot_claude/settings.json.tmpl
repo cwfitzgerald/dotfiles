@@ -38,11 +38,10 @@
     "defaultMode": "auto"
   },
 {{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
-{{- $caffeine := printf "%s/caffeine.sh" $hooksDir -}}
-{{- if eq .chezmoi.os "windows" -}}
-{{- $caffeine = printf "powershell -ExecutionPolicy Bypass -File %s/caffeine.ps1" $hooksDir -}}
-{{- else if eq .chezmoi.os "linux" -}}
-{{- $caffeine = "powershell.exe -ExecutionPolicy Bypass -File /mnt/c/Users/conno/.claude/hooks/caffeine.ps1" -}}
+{{- $caffeine := printf "uv run --script %s/caffeine.py" $hooksDir -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
+{{- $caffeine = "uv.exe run --script C:/Users/conno/.claude/hooks/caffeine.py" -}}
 {{- end }}
   "hooks": {
     "SessionStart": [
