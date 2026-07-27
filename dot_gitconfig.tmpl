@@ -4,10 +4,18 @@
 {{- if eq .chezmoi.os "windows" }}
 	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
 {{- end }}
+{{- $workEmail := get . "workEmail" }}
 [user]
-	email = "{{ .email }}"
 	name = Connor Fitzgerald
+{{- if $workEmail }}
+	# No default identity on a multi-identity machine; email/signingkey come
+	# from the includeIf sections below. useConfigOnly makes git hard-error
+	# rather than guessing an identity from the hostname for repos outside them.
+	useConfigOnly = true
+{{- else }}
+	email = "{{ .email }}"
 	signingkey = {{ .signingKey }}
+{{- end }}
 [gpg]
 	format = ssh
 [gpg "ssh"]
@@ -26,3 +34,13 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+{{- if $workEmail }}
+# Mirrors the jj scopes in .config/jj/conf.d/10-identity.toml. A trailing slash
+# implies /**, so these cover every repo beneath the directory.
+[includeIf "gitdir:~/Programming/open/"]
+	path = ~/.config/git/identity-open
+[includeIf "gitdir:~/.local/share/chezmoi/"]
+	path = ~/.config/git/identity-open
+[includeIf "gitdir:~/Programming/work/"]
+	path = ~/.config/git/identity-work
+{{- end }}

@@ -11,3 +11,10 @@ Library/**
 .claude/hooks/*.sh
 .codex/hooks/*.sh
 {{- end }}
+{{- if not (get . "workEmail") }}
+{{/* Single-identity machine: the per-directory identity split is not deployed. */}}
+.config/jj/conf.d
+.config/jj/conf.d/**
+.config/git
+.config/git/identity-*
+{{- end }}

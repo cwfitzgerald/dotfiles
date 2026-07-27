@@ -1,0 +1,30 @@
+"$schema" = "https://jj-vcs.github.io/jj/latest/config-schema.json"
+
+# Deployed only on machines with more than one identity (see .chezmoiignore).
+# Loaded after config.toml, so it overrides the single identity set there.
+#
+# There is deliberately no default identity: an empty user.email makes jj warn
+# on every commit and refuse to push, so a repo outside the paths below fails
+# loudly instead of being silently attributed to the wrong identity.
+[user]
+email = ""
+
+[signing]
+key = ""
+
+# Open source, plus the dotfiles repo, which lives outside ~/Programming and
+# needs a working identity for chezmoi's autoCommit/autoPush.
+[[--scope]]
+--when.repositories = ["~/Programming/open", "~/.local/share/chezmoi"]
+[--scope.user]
+email = {{ .email | quote }}
+[--scope.signing]
+key = {{ .signingKey | quote }}
+
+# Closed source.
+[[--scope]]
+--when.repositories = ["~/Programming/work"]
+[--scope.user]
+email = {{ .workEmail | quote }}
+[--scope.signing]
+key = {{ .workSigningKey | quote }}

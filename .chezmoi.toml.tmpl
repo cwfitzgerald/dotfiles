@@ -1,9 +1,20 @@
-{{- $email := promptStringOnce . "email" "Email address" -}}
-{{- $signingKey := promptStringOnce . "signingKey" "SSH public key (e.g. ssh-ed25519 AAAA...)" -}}
+{{/* The open-source identity. On single-identity machines this is the only one,
+     and it is used globally. */}}
+{{- $email := promptStringOnce . "email" "Open-source email address" -}}
+{{- $signingKey := promptStringOnce . "signingKey" "Open-source SSH public key (e.g. ssh-ed25519 AAAA...)" -}}
+{{/* A non-empty workEmail marks this as a work machine, which switches on the
+     per-directory identity split (see .chezmoiignore). Leave blank elsewhere. */}}
+{{- $workEmail := promptStringOnce . "workEmail" "Work email address (blank if this machine has only one identity)" "" -}}
+{{- $workSigningKey := "" -}}
+{{- if $workEmail -}}
+{{-   $workSigningKey = promptStringOnce . "workSigningKey" "Work SSH public key (e.g. ssh-ed25519 AAAA...)" -}}
+{{- end -}}
 
 [data]
 email = {{ $email | quote }}
 signingKey = {{ $signingKey | quote }}
+workEmail = {{ $workEmail | quote }}
+workSigningKey = {{ $workSigningKey | quote }}
 
 [edit]
 command = "code"
