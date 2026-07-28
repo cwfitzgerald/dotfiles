@@ -11,14 +11,70 @@
 {{- $caffeine = "pythonw.exe 'C:/Users/conno/.codex/hooks/caffeine.py'" -}}
 {{- $notify = "powershell.exe -ExecutionPolicy Bypass -File '/mnt/c/Users/conno/.codex/hooks/notify.ps1'" -}}
 {{- end -}}
+{{- /* Codex supports exactly 11 events (HookEventName in the app-server
+       protocol), keyed PascalCase, and the config struct is deny_unknown_fields
+       -- an unrecognized key rejects this whole file. Claude Code's
+       Notification, StopFailure and PostToolUseFailure have no Codex
+       equivalent, so the interrupt signals wired on that side are unavailable
+       here; SessionEnd plus the rolling expiry are the backstop. */ -}}
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} reset"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} reset"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "{{ $caffeine }} on"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} touch"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} acquire"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} release"
           }
         ]
       }

@@ -2,3 +2,7 @@
 [user]
 	email = "{{ .workEmail }}"
 	signingkey = {{ .workSigningKey }}
+[core]
+	# See identity-open for why this must live on the ssh command line rather
+	# than in ~/.ssh/config.
+	sshCommand = ssh -o PubkeyAcceptedAlgorithms=+ssh-ed25519 -o IdentitiesOnly=yes -i ~/.ssh/github_work_auth.pub

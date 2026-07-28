@@ -70,9 +70,31 @@
         ]
       }
     ],
-    "PreToolUse": [
+    "PostToolUse": [
       {
-        "matcher": "Task|Agent",
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} touch"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} interrupt"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
@@ -99,6 +121,41 @@
           {
             "type": "command",
             "command": "{{ $caffeine }} off"
+          }
+        ]
+      }
+    ],
+{{- /* Stop does not fire on an Esc, and an API error fires StopFailure in its
+       place. Without these three the hold survives a cancel until it expires. */}}
+    "StopFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} off"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} off"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} reset"
           }
         ]
       }

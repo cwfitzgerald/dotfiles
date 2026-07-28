@@ -18,3 +18,9 @@ Library/**
 .config/git
 .config/git/identity-*
 {{- end }}
+{{- if not (get . "workEmail") }}
+{{/* Single identity, so ~/.ssh/config has no per-directory Match blocks and
+     nothing would point IdentitiesOnly at these. */}}
+.ssh/github_open_auth.pub
+.ssh/github_work_auth.pub
+{{- end }}

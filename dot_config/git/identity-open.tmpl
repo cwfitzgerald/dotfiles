@@ -2,3 +2,10 @@
 [user]
 	email = "{{ .email }}"
 	signingkey = {{ .signingKey }}
+[core]
+	# Options here rather than in ~/.ssh/config: a management policy may
+	# prepend directives to the top of that file, and ssh takes the first
+	# value it sees for an option, so only the command line reliably outranks
+	# it. This also pins the identity, which makes key choice follow the repo
+	# rather than the shell's working directory.
+	sshCommand = ssh -o PubkeyAcceptedAlgorithms=+ssh-ed25519 -o IdentitiesOnly=yes -i ~/.ssh/github_open_auth.pub

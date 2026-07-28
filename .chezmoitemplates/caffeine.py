@@ -12,11 +12,27 @@ session's stale hold is swept up automatically -- no leaked reference counts,
 no cross-session sabotage.
 
 bg is not a pure counter: SubagentStop also fires for agents that never passed
-through a PreToolUse acquire (hidden housekeeping agents, resumed agents), so
-blind decrements drain holds belonging to still-running work. Stop and
+through a SubagentStart acquire (hidden housekeeping agents, resumed agents),
+so blind decrements drain holds belonging to still-running work. Stop and
 SubagentStop payloads carry an authoritative `background_tasks` list, so those
 events *reconcile* bg from it instead of doing arithmetic; the acquire counter
 only bridges the gap between an agent spawn and the next reconciling event.
+
+Ending a turn is not one event. Stop is documented not to fire on a user
+interrupt, and an API error fires StopFailure in its place, so `off` is also
+wired to StopFailure, to the `idle_prompt` Notification, and to
+PostToolUseFailure via `interrupt` (which acts only on `is_interrupt`). Without
+those, an Esc pins the machine awake until the hold expires. Conversely,
+SessionStart fires on `compact` and `fork` *mid-turn*, so `reset` ignores those
+sources rather than dropping a live hold.
+
+Both harnesses share this script and this state dir, and both name the same
+SessionStart sources, so one keeper covers the machine. They diverge on what
+exists: Codex has no Notification, StopFailure or PostToolUseFailure, so it
+gets no interrupt signal and falls back to SessionEnd plus the expiry. Its
+Stop/SubagentStop payloads also omit `background_tasks`, so bg there is the
+arithmetic path -- sound only because Codex fires SubagentStop solely for the
+ThreadSpawn agents that fired SubagentStart.
 
 Wake backends: SetThreadExecutionState on Windows, caffeinate(8) on macOS.
 Elsewhere the keeper only tracks state and logs a warning.
@@ -24,7 +40,12 @@ Elsewhere the keeper only tracks state and logs a warning.
 Stdlib only, and hooks must invoke it via pythonw on Windows: a console-
 subsystem interpreter spawned by a console-less hook harness allocates a
 visible console window on every event.
+
+Targets Python 3.8: macOS ships 3.9 as /usr/bin/python3 and the hooks run under
+whatever `python3` resolves to, so `X | None` annotations must stay deferred.
 """
+
+from __future__ import annotations
 
 import json
 import os
@@ -33,6 +54,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -44,9 +66,24 @@ LOCK_DIR = STATE_DIR / ".lock"
 
 INTERVAL = 60  # keeper re-check cadence, seconds
 STALE_TTL = 7200  # a hold is ignored this many seconds after its last refresh
+KEEPER_BEAT_TTL = 300  # a keeper whose heartbeat is older than this is not ours
 LOG_ROTATE_BYTES = 1_000_000
 
-ACTIONS = ("on", "off", "acquire", "release", "reset", "status", "__keeper")
+ACTIONS = (
+    "on",
+    "off",
+    "acquire",
+    "release",
+    "touch",
+    "interrupt",
+    "reset",
+    "status",
+    "__keeper",
+)
+
+# SessionStart sources that really mean "fresh session". `compact` and `fork`
+# fire mid-turn against a session that is still working.
+RESET_SOURCES = ("startup", "clear", "resume")
 
 
 def now() -> int:
@@ -142,9 +179,22 @@ def read_session(path: Path) -> dict:
         return {"turn": 0, "bg": 0, "expiry": 0}
 
 
+def write_atomic(path: Path, text: str) -> None:
+    """The keeper and `status` read these files without taking the lock, and a
+    torn read parses as {turn:0, bg:0} -- which reads as "nobody wants awake"
+    and drops the wake lock mid-turn. Swap the file in whole instead."""
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    try:
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(str(tmp), str(path))
+    except OSError:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
 def write_session(path: Path, state: dict) -> None:
     state["expiry"] = now() + STALE_TTL
-    path.write_text(json.dumps(state), encoding="utf-8")
+    write_atomic(path, json.dumps(state))
 
 
 def any_wants_awake() -> bool:
@@ -217,15 +267,49 @@ def pid_exists(pid: int) -> bool:
         return True
 
 
-def keeper_pid() -> int:
+def read_keeper_record() -> tuple:
+    """(pid, last heartbeat epoch). A bare-integer file is the pre-heartbeat
+    format; report beat=0 for it."""
     try:
-        return int(KEEPER_PID_FILE.read_text().strip())
-    except (OSError, ValueError):
-        return 0
+        raw = KEEPER_PID_FILE.read_text(encoding="utf-8-sig").strip()
+    except OSError:
+        return 0, 0
+    try:
+        rec = json.loads(raw)
+        return int(rec["pid"]), int(rec["beat"])
+    except (ValueError, TypeError, KeyError):
+        pass
+    try:
+        return int(raw), 0
+    except ValueError:
+        return 0, 0
+
+
+def write_keeper_record(pid: int) -> None:
+    write_atomic(KEEPER_PID_FILE, json.dumps({"pid": pid, "beat": now()}))
+
+
+def keeper_pid() -> int:
+    return read_keeper_record()[0]
 
 
 def keeper_alive() -> bool:
-    return pid_exists(keeper_pid())
+    """A live pid alone is not proof: the state dir outlives a reboot on
+    Windows, where the OS is free to reissue the recorded pid to something
+    unrelated. Requiring a warm heartbeat keeps us from mistaking a stranger
+    for the keeper -- and, in stop_keeper, from sending it a SIGTERM."""
+    pid, beat = read_keeper_record()
+    if not pid_exists(pid):
+        return False
+    return now() - beat < KEEPER_BEAT_TTL
+
+
+def clear_keeper_record(pid: int) -> None:
+    """Only when it still names us. A keeper that overran its heartbeat may
+    have been superseded, and deleting the successor's record would have the
+    next hook spawn a third."""
+    if keeper_pid() == pid:
+        KEEPER_PID_FILE.unlink(missing_ok=True)
 
 
 def start_keeper() -> None:
@@ -248,13 +332,13 @@ def start_keeper() -> None:
     else:
         kwargs["start_new_session"] = True
         proc = subprocess.Popen(cmd, **kwargs)
-    KEEPER_PID_FILE.write_text(str(proc.pid))
+    write_keeper_record(proc.pid)
     log(f"keeper-start pid={proc.pid}")
 
 
 def stop_keeper() -> None:
-    pid = keeper_pid()
-    if pid_exists(pid):
+    if keeper_alive():
+        pid = keeper_pid()
         log(f"keeper-kill pid={pid}")
         try:
             os.kill(pid, signal.SIGTERM)
@@ -286,11 +370,19 @@ class WakeLock:
             ctypes.windll.kernel32.SetThreadExecutionState(
                 es_continuous | es_system | es_display
             )
-        elif sys.platform == "darwin" and self.caffeinate is None:
-            # -w ties the assertion to the keeper's lifetime, even if killed.
-            self.caffeinate = subprocess.Popen(
-                ["caffeinate", "-dis", "-w", str(os.getpid())]
-            )
+        elif sys.platform == "darwin":
+            if self.caffeinate is not None and self.caffeinate.poll() is not None:
+                # Killed out from under us; hold() is the re-assert point.
+                log("keeper-warn caffeinate died; respawning")
+                self.caffeinate = None
+            if self.caffeinate is None:
+                # -w ties the assertion to the keeper's lifetime, even if killed.
+                try:
+                    self.caffeinate = subprocess.Popen(
+                        ["caffeinate", "-dis", "-w", str(os.getpid())]
+                    )
+                except OSError as e:
+                    log(f"keeper-warn caffeinate unavailable: {e}")
 
     def drop(self) -> None:
         if os.name == "nt":
@@ -299,28 +391,53 @@ class WakeLock:
             ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
         elif self.caffeinate is not None:
             self.caffeinate.terminate()
+            try:  # reap, so a keeper that later re-holds leaves no zombie
+                self.caffeinate.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.caffeinate.kill()
             self.caffeinate = None
 
 
+def sweep() -> bool:
+    """Drop expired holds; report whether any survivor still wants awake."""
+    t = now()
+    wants = False
+    for f in STATE_DIR.glob("sess-*.json"):
+        s = read_session(f)
+        if t >= s["expiry"]:
+            log(f"keeper-sweep removed {f.name} turn={s['turn']} bg={s['bg']}")
+            f.unlink(missing_ok=True)
+            continue
+        if s["turn"] == 1 or s["bg"] > 0:
+            wants = True
+    return wants
+
+
 def run_keeper() -> None:
+    me = os.getpid()
     wake = WakeLock()
     while True:
-        t = now()
-        wants = False
-        for f in STATE_DIR.glob("sess-*.json"):
-            s = read_session(f)
-            if t >= s["expiry"]:
-                log(f"keeper-sweep removed {f.name} turn={s['turn']} bg={s['bg']}")
-                f.unlink(missing_ok=True)
-                continue
-            if s["turn"] == 1 or s["bg"] > 0:
-                wants = True
+        try:
+            wants = sweep()
+        except OSError as e:
+            # Err toward staying awake: a transient stat failure is a much
+            # cheaper mistake than sleeping the machine mid-turn.
+            log(f"keeper-warn sweep failed: {e}")
+            wants = True
         if not wants:
-            wake.drop()
-            log("keeper-exit (idle)")
-            KEEPER_PID_FILE.unlink(missing_ok=True)
-            return
+            # Exit under the lock. Otherwise a hook can see us alive, skip
+            # start_keeper, and be left with no keeper the moment we return.
+            acquire_lock("__keeper", str(me))
+            try:
+                if not any_wants_awake():
+                    wake.drop()
+                    log("keeper-exit (idle)")
+                    clear_keeper_record(me)
+                    return
+            finally:
+                release_lock()
         wake.hold()
+        write_keeper_record(me)  # heartbeat: proves this pid is still ours
         time.sleep(INTERVAL)
 
 
@@ -343,14 +460,22 @@ def transition(sid: str, path: Path, action: str, payload: dict) -> dict:
         n = running_background_tasks(payload)
         if n is not None:
             s["bg"] = n
+    elif action == "interrupt":  # a tool failed; only Esc ends the turn
+        if payload.get("is_interrupt"):
+            s["turn"] = 0
+    elif action == "touch":  # tool activity: renew the expiry, change nothing
+        pass
     write_session(path, s)
     log(f"{action} sid={sid} {prev} -> turn={s['turn']} bg={s['bg']}")
     return s
 
 
 def print_status() -> None:
+    pid, beat = read_keeper_record()
     if keeper_alive():
-        print(f"caffeine: ENABLED (keeper pid {keeper_pid()} running)")
+        print(f"caffeine: ENABLED (keeper pid {pid}, beat {now() - beat}s ago)")
+    elif pid:
+        print(f"caffeine: DISABLED (stale record for pid {pid}, no live keeper)")
     else:
         print("caffeine: DISABLED (no keeper running)")
     t = now()
@@ -364,18 +489,20 @@ def print_status() -> None:
         print(f"  {f.name}: turn={s['turn']} bg={s['bg']} ({fresh}, expiry in {left}s)")
     if LOG_FILE.exists():
         print(f"  recent log ({LOG_FILE}):")
-        for line in LOG_FILE.read_text(encoding="utf-8").splitlines()[-8:]:
+        text = LOG_FILE.read_text(encoding="utf-8", errors="replace")
+        for line in text.splitlines()[-8:]:
             print(f"    {line}")
 
 
-def main() -> int:
+def dispatch() -> int:
     if len(sys.argv) != 2 or sys.argv[1] not in ACTIONS:
         if sys.stderr:  # absent under pythonw
             usage = "|".join(a for a in ACTIONS if a != "__keeper")
             print(f"usage: caffeine.py [{usage}]", file=sys.stderr)
         return 1
     action = sys.argv[1]
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    # 0o700: on Linux the temp dir is shared, and these files carry prompt text.
+    STATE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
 
     if action == "__keeper":
         run_keeper()
@@ -390,20 +517,47 @@ def main() -> int:
 
     acquire_lock(action, sid)
     try:
-        if action == "reset":  # new session: drop only this session's state
+        source = payload.get("source")
+        if action == "reset" and source is not None and source not in RESET_SOURCES:
+            # SessionStart also fires for `compact` and `fork`, which happen
+            # partway through a turn that is still running. Resetting there
+            # drops the hold during exactly the long turns worth protecting.
+            log(f"reset-skip sid={sid} source={source}")
+        elif action == "reset":  # new session: drop only this session's state
             s = read_session(path)
-            log(f"reset sid={sid} dropped turn={s['turn']} bg={s['bg']}")
+            log(f"reset sid={sid} source={source} turn={s['turn']} bg={s['bg']}")
             path.unlink(missing_ok=True)
             stop_keeper_if_idle()
         else:
             s = transition(sid, path, action, payload)
             if action in ("on", "acquire"):
                 start_keeper()
+            elif action == "touch":
+                # Every tool call doubles as a self-heal point for a keeper
+                # that died while its session still wanted awake.
+                if s["turn"] == 1 or s["bg"] > 0:
+                    start_keeper()
             else:
                 stop_keeper_if_idle()
     finally:
         release_lock()
     return 0
+
+
+def main() -> int:
+    try:
+        return dispatch()
+    except Exception:
+        # A keep-awake hiccup must never surface as a hook error in the
+        # transcript, and must never exit 2 -- that erases a submitted prompt
+        # on UserPromptSubmit and blocks the turn from ending on Stop.
+        # dispatch() releases the lock in its own finally, and releasing one we
+        # do not hold would rmdir another process's lock.
+        try:
+            log("error " + " | ".join(traceback.format_exc().strip().splitlines()))
+        except Exception:
+            pass
+        return 0
 
 
 if __name__ == "__main__":
