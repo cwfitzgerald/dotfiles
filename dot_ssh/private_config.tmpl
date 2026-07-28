@@ -1,0 +1,24 @@
+{{- $workEmail := get . "workEmail" -}}
+# Deployed on macOS only (see .chezmoiignore); Windows 1Password takes over
+# the native OpenSSH agent pipe, so no config is needed there.
+{{- if $workEmail }}
+#
+# This machine carries a management policy that restricts
+# PubkeyAcceptedAlgorithms in /etc/ssh/ssh_config.d. ssh reads this file
+# before the system one and takes the first value it sees per option, so the
+# override under Host * below outranks the policy; overriding it here is the
+# sanctioned fix. IdentitiesOnly with no IdentityFile configured means a bare
+# `ssh git@github.com` offers no keys at all: only repos inside a configured
+# scope, whose core.sshCommand passes -i explicitly, can authenticate. That
+# keeps the GitHub account a function of where the repo lives; see
+# .config/git/identity-{open,work}.
+
+Host github.com
+    IdentitiesOnly yes
+{{- end }}
+
+Host *
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+{{- if $workEmail }}
+    PubkeyAcceptedAlgorithms +ssh-ed25519
+{{- end }}

@@ -35,12 +35,18 @@
 	process = git-lfs filter-process
 	required = true
 {{- if $workEmail }}
-# Mirrors the jj scopes in .config/jj/conf.d/10-identity.toml. A trailing slash
-# implies /**, so these cover every repo beneath the directory.
-[includeIf "gitdir:~/Programming/open/"]
+[alias]
+	# Which identity and GitHub account does the repo I'm standing in resolve to?
+	whoami = "!nu ~/.config/git/whoami.nu"
+# Generated from .chezmoidata.toml, the single source of truth shared with the
+# jj scopes in .config/jj/conf.d/10-identity.toml; edit the mapping there. The
+# trailing slash implies /**, so these cover every repo beneath the directory.
+{{- range .scopeDirs.open }}
+[includeIf "gitdir:{{ . }}/"]
 	path = ~/.config/git/identity-open
-[includeIf "gitdir:~/.local/share/chezmoi/"]
-	path = ~/.config/git/identity-open
-[includeIf "gitdir:~/Programming/work/"]
+{{- end }}
+{{- range .scopeDirs.work }}
+[includeIf "gitdir:{{ . }}/"]
 	path = ~/.config/git/identity-work
+{{- end }}
 {{- end }}

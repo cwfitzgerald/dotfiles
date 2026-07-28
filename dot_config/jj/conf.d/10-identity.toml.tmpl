@@ -3,6 +3,9 @@
 # Deployed only on machines with more than one identity (see .chezmoiignore).
 # Loaded after config.toml, so it overrides the single identity set there.
 #
+# The directory lists come from .chezmoidata.toml, the single source of truth
+# shared with git's includeIf sections; edit the mapping there, not here.
+#
 # There is deliberately no default identity: an empty user.email makes jj warn
 # on every commit and refuse to push, so a repo outside the paths below fails
 # loudly instead of being silently attributed to the wrong identity.
@@ -12,18 +15,20 @@ email = ""
 [signing]
 key = ""
 
-# Open source, plus the dotfiles repo, which lives outside ~/Programming and
-# needs a working identity for chezmoi's autoCommit/autoPush.
 [[--scope]]
---when.repositories = ["~/Programming/open", "~/.local/share/chezmoi"]
+--when.repositories = {{ .scopeDirs.open | toJson }}
 [--scope.user]
 email = {{ .email | quote }}
 [--scope.signing]
 key = {{ .signingKey | quote }}
 
-# Closed source.
+# `git whoami` cannot dispatch in a non-colocated repo, since there is no .git
+# at the workspace root; this reaches the same script through jj instead.
+[aliases]
+whoami = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/git/whoami.nu']
+
 [[--scope]]
---when.repositories = ["~/Programming/work"]
+--when.repositories = {{ .scopeDirs.work | toJson }}
 [--scope.user]
 email = {{ .workEmail | quote }}
 [--scope.signing]

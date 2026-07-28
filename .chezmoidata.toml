@@ -1,0 +1,14 @@
+# Single source of truth for the directory -> identity mapping on
+# multi-identity machines. Broadcast by template into:
+#   - jj scopes:          dot_config/jj/conf.d/10-identity.toml.tmpl
+#   - git includeIf:      dot_gitconfig.tmpl
+# Never write these paths directly in those files; edit this list instead.
+#
+# Unlike .chezmoi.toml.tmpl this file is re-read on every apply, so changes
+# here propagate without re-running `chezmoi init`.
+[scopeDirs]
+# Open source, plus the dotfiles repo, which lives outside ~/Programming and
+# needs a working identity for chezmoi's autoCommit/autoPush.
+open = ["~/Programming/open", "~/.local/share/chezmoi"]
+# Closed source.
+work = ["~/Programming/work"]
