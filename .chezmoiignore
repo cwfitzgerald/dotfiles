@@ -1,4 +1,7 @@
+{{/* Repo-only docs; they describe the source tree and must not land in ~. */}}
 README.md
+AGENTS.md
+CLAUDE.md
 {{- if ne .chezmoi.os "windows" }}
 AppData/**
 Documents/**
