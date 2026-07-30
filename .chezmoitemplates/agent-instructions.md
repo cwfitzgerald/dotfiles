@@ -40,6 +40,15 @@ Any change to Claude, Codex, `jj`, or other dev-tool configuration (instructions
 The following commands ALWAYS require `sandbox_permissions: "require_escalated"`:
 - `jj`
 - `gh`
+
+When delegating work to subagents, pass an explicit `model` and `reasoning_effort` when the spawn tool supports an override, and match both to the work item's difficulty rather than defaulting everything to one configuration:
+
+- `model: "gpt-5.6-sol"` with `reasoning_effort: "high"` for serious work and anything needing critical thinking: non-trivial implementation, debugging, design-sensitive research, architectural judgment, and fresh-eyes review. Use `"xhigh"` for the hardest unusually subtle tasks.
+- `model: "gpt-5.6-terra"` with `reasoning_effort: "medium"` as the workhorse for moderate, well-scoped tasks: routine implementation, standard research, and code reading that needs some judgment but not deep reasoning.
+- `model: "gpt-5.6-terra"` with `reasoning_effort: "low"` for cheap, fast, mechanical work whose output I can verify at a glance: running tests and reporting results, simple renames, straightforward "find where X is defined" lookups, and file/state checks.
+- When in doubt between two configurations, pick the more capable model or higher effort — a failed cheap agent costs more than a successful expensive one.
+
+Model or effort overrides require a limited-context fork: set `fork_turns` to `"none"` or a positive turn count. A full-history fork (`fork_turns: "all"` or omitted) inherits the parent model and effort; use that when the subagent needs the complete conversation more than it needs a different configuration.
 {{- end }}
 {{ if eq .harness "claude" }}
 When delegating work to subagents via the Agent tool, pass an explicit `model` and match the tier to the work item's difficulty rather than defaulting everything to one model:
