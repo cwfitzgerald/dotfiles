@@ -5,6 +5,14 @@
 	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
 {{- end }}
 {{- $workEmail := get . "workEmail" }}
+{{- if $workEmail }}
+	# Machine default: the work key. Open-source directories override this via
+	# the includeIf sections below (identity-open passes its own -i, which is
+	# then the sole key offered thanks to IdentitiesOnly in ~/.ssh/config).
+	# Deliberately NOT an IdentityFile in ~/.ssh/config: config identities are
+	# offered before command-line ones, which would break the open override.
+	sshCommand = ssh -i ~/.ssh/github_work_auth.pub
+{{- end }}
 [user]
 	name = Connor Fitzgerald
 {{- if $workEmail }}

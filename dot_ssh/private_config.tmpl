@@ -11,9 +11,12 @@
 # daemon rewrites this file to strip the override if it appears under Host *,
 # but leaves a github.com special case alone. IdentitiesOnly with no
 # IdentityFile configured means a bare `ssh git@github.com` offers no keys at
-# all: only repos inside a configured scope, whose core.sshCommand passes -i
-# explicitly, can authenticate. That keeps the GitHub account a function of
-# where the repo lives; see .config/git/identity-{open,work}.
+# all: keys only ever arrive via -i from git's core.sshCommand (work key as
+# the machine default in ~/.gitconfig, open key via identity-open). No
+# IdentityFile may be added here: config identities are offered before
+# command-line ones, so it would defeat the identity-open override. That
+# keeps the GitHub account a function of where the repo lives; see
+# .config/git/identity-{open,work}.
 
 Host github.com
     IdentitiesOnly yes

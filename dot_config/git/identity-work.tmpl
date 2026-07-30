@@ -1,7 +1,6 @@
 # Pulled in by ~/.gitconfig via includeIf; see dot_gitconfig.tmpl.
+# No sshCommand here: the work key is the machine-wide default, set in the
+# global [core] section of ~/.gitconfig.
 [user]
 	email = "{{ .workEmail }}"
 	signingkey = {{ .workSigningKey }}
-[core]
-	# See identity-open for how key routing works.
-	sshCommand = ssh -i ~/.ssh/github_work_auth.pub
