@@ -35,7 +35,9 @@ All commits made should pass linting and formatting. To run a command on every c
 # Local Tooling
 
 You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
-
+{{ if get . "workEmail" }}
+I have two GitHub accounts, and a wrapper on `PATH` routes `gh` to the one that matches the directory you are working in — work by default, the open-source account under the open-source directories. So change accounts by working in the right repo, never with `gh auth switch` or `GH_CONFIG_DIR`. `git whoami` reports which identity and account the current directory resolves to.
+{{ end }}
 My global configuration — agent instructions, hooks, settings, `jj`/git/ssh/shell config — is managed by chezmoi, with its source at `~/.local/share/chezmoi`. Files under `~` like `~/.claude/CLAUDE.md` or `~/.gitconfig` are generated; hand-edits there are reverted on the next apply.
 
 So: any change to Claude, Codex, Pi, `jj`, or other dev-tool configuration must go through chezmoi rather than the live file, and if you find yourself about to hand-edit a config file that isn't managed yet, bring it under chezmoi first. To do either, work in `~/.local/share/chezmoi` and follow that repo's `AGENTS.md`, which covers the layout, the workflow, and the constraints on what may be written there.

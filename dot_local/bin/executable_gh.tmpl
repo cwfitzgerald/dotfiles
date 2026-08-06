@@ -1,0 +1,73 @@
+#!/bin/sh
+# Route `gh` to the GitHub account that matches where I am standing.
+#
+# gh keeps the active account in $GH_CONFIG_DIR/hosts.yml -- global state -- so
+# routing means picking one of two config dirs:
+#
+#   ~/.config/gh        work account, the machine default
+#   ~/.config/gh-open   open-source account
+#
+# The open-source directories below are the override, exactly as they are for
+# the commit identity and the ssh key (~/.gitconfig includeIf,
+# ~/.config/jj/conf.d/10-identity.toml). All three are generated from the
+# mapping in chezmoi's .chezmoidata.toml; edit it there, not here.
+#
+# A wrapper on PATH rather than a shell hook, so editors, scripts and agents
+# route the same way an interactive shell does. An explicit GH_CONFIG_DIR in
+# the environment wins, as an escape hatch.
+set -u
+
+if [ -z "${GH_CONFIG_DIR-}" ]; then
+    cwd=$(pwd -P)
+    for scope in \
+{{- range .scopeDirs.open }}
+        "$HOME/{{ . | trimPrefix "~/" }}" \
+{{- end }}
+    ; do
+        # Compare resolved paths: a symlinked scope dir would never match the
+        # physical cwd otherwise.
+        real=$(cd "$scope" 2>/dev/null && pwd -P) || real=$scope
+        case "$cwd/" in
+        "$real"/*)
+            GH_CONFIG_DIR="$HOME/.config/gh-open"
+            export GH_CONFIG_DIR
+            if [ ! -f "$GH_CONFIG_DIR/hosts.yml" ]; then
+                echo "gh: no account in $GH_CONFIG_DIR; run \`GH_CONFIG_DIR=$GH_CONFIG_DIR gh auth login\`" >&2
+            fi
+            break
+            ;;
+        esac
+    done
+fi
+
+# The gh this wrapper shadows: the next one on PATH outside this wrapper's own
+# directory. Recognising that directory wrongly means exec'ing this file again,
+# so take it from both the install path and argv[0] and skip either -- one holds
+# when argv[0] is stripped, the other when the file has been moved. Neither uses
+# dirname: a PATH without coreutils must not be able to open the loop.
+self_dir=$(cd "$HOME/.local/bin" 2>/dev/null && pwd -P) || self_dir="$HOME/.local/bin"
+case $0 in
+    */*) arg0_dir=$(cd "${0%/*}" 2>/dev/null && pwd -P) || arg0_dir= ;;
+    *) arg0_dir= ;;
+esac
+real_gh=
+IFS=:
+set -f
+for dir in $PATH; do
+    [ -n "$dir" ] || dir=.
+    [ -f "$dir/gh" ] && [ -x "$dir/gh" ] || continue
+    real_dir=$(cd "$dir" 2>/dev/null && pwd -P) || continue
+    [ "$real_dir" != "$self_dir" ] || continue
+    [ -z "$arg0_dir" ] || [ "$real_dir" != "$arg0_dir" ] || continue
+    real_gh=$dir/gh
+    break
+done
+unset IFS
+set +f
+
+if [ -z "$real_gh" ]; then
+    echo "gh: no gh on PATH outside $self_dir" >&2
+    exit 127
+fi
+
+exec "$real_gh" "$@"

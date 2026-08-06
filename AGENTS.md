@@ -60,6 +60,28 @@ Files and directories beginning with `.` are chezmoi's own and are never applied
 `README.md`, `AGENTS.md`, and `CLAUDE.md` are repo-only and are listed in
 `.chezmoiignore` so they stay out of `~`.
 
+## Per-directory identity
+
+On a work machine, which identity a repo gets is a function of where it lives.
+`.chezmoidata.toml` holds the directory → identity mapping, and three generated
+consumers read it:
+
+| Consumer | Source | Mechanism |
+| --- | --- | --- |
+| commit email, signing key, ssh key | `dot_gitconfig.tmpl` + `dot_config/git/identity-*` | git `includeIf "gitdir:"` |
+| jj commit email, signing key | `dot_config/jj/conf.d/10-identity.toml.tmpl` | jj scopes |
+| `gh` account | `dot_local/bin/executable_gh.tmpl` | wrapper on PATH, sets `GH_CONFIG_DIR` |
+
+Work is the machine default in all three; the open-source directories are the
+only override, so a repo outside the mapping gets the work identity (git, which
+sets `useConfigOnly`, instead hard-errors rather than guessing). `gh`'s account
+lives in `$GH_CONFIG_DIR/hosts.yml`, so routing it means picking a config dir:
+`~/.config/gh` for work, `~/.config/gh-open` for open source, each authenticated
+by its own `gh auth login`. `git whoami` reports what the directory you are
+standing in resolves to and errors if the three disagree.
+
+None of this is deployed on a single-identity machine; see `.chezmoiignore`.
+
 ## Workflow
 
 Edit the source, then apply:
@@ -111,6 +133,6 @@ tight, and keep it employer-agnostic per the rules above.
 
 ## Scope
 
-Any change to Claude, Codex, Pi, `jj`, git, ssh, or shell configuration belongs
+Any change to Claude, Codex, Pi, `jj`, git, `gh`, ssh, or shell configuration belongs
 here, not in the live file. If a config file isn't managed yet, `chezmoi add` it
 first, then edit the source.

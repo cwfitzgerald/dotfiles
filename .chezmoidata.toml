@@ -2,6 +2,7 @@
 # multi-identity machines. Broadcast by template into:
 #   - jj scopes:          dot_config/jj/conf.d/10-identity.toml.tmpl
 #   - git includeIf:      dot_gitconfig.tmpl
+#   - gh config dirs:     dot_local/bin/executable_gh.tmpl
 # Never write these paths directly in those files; edit this list instead.
 #
 # Unlike .chezmoi.toml.tmpl this file is re-read on every apply, so changes

@@ -1,10 +1,10 @@
 # Report which identity and GitHub account the current repository resolves to.
 #
-# Identity is a function of where the repo lives; see .config/git/identity-*
-# and .config/jj/conf.d/10-identity.toml, both generated from the mapping in
-# chezmoi's .chezmoidata.toml. Because git and jj each resolve the mapping
-# independently, this script asks both and screams if they disagree -- a
-# disagreement means the deployed configs have drifted from the source.
+# Identity is a function of where the repo lives; see .config/git/identity-*,
+# .config/jj/conf.d/10-identity.toml and ~/.local/bin/gh, all generated from the
+# mapping in chezmoi's .chezmoidata.toml. Because git, jj and gh each resolve the
+# mapping independently, this script asks all three and screams if they disagree
+# -- a disagreement means the deployed configs have drifted from the source.
 
 # Three states worth telling apart, because they mean very different things:
 #   in_repo = false          -> not in a repo; nothing to resolve yet
@@ -36,6 +36,25 @@ def git-cfg [dir: string, key: string]: nothing -> string {
         ^git --git-dir $dir config $key | complete
     }
     if $r.exit_code == 0 { $r.stdout | str trim } else { "" }
+}
+
+# Which GitHub account the repo's key authenticates as.
+def key-account [ssh: string]: nothing -> string {
+    let r = (^sh -c $"($ssh) -o ConnectTimeout=10 -T git@github.com" | complete)
+    ([$r.stdout $r.stderr] | str join "\n" | lines
+        | where ($it | str starts-with "Hi ")
+        | get 0? | default ""
+        | parse "Hi {user}!{rest}" | get user.0? | default "")
+}
+
+# Which GitHub account `gh` acts as. Routed by ~/.local/bin/gh, which keys off
+# the working directory rather than the repo's git dir. --json holds the exit
+# code at 0, so a config dir with no login reads as empty rather than as a
+# failure.
+def gh-account []: nothing -> string {
+    let r = (^gh auth status --active --json hosts --jq '.hosts."github.com"[0].login' | complete)
+    if $r.exit_code != 0 { return "" }
+    $r.stdout | str trim
 }
 
 def jj-cfg [key: string]: nothing -> string {
@@ -83,20 +102,39 @@ if not $ctx.in_repo {
         print $"commit:  ($name) <($email)>"
     }
 
+    let key_user = if ($ssh | is-empty) { "" } else { key-account $ssh }
+
     if ($ssh | is-empty) {
         print "key:     (none - this repo is outside every configured scope)"
         print "github:  would be denied"
     } else {
         print $"key:     ($ssh | split row '-i ' | last | str trim)"
-        let r = (^sh -c $"($ssh) -o ConnectTimeout=10 -T git@github.com" | complete)
-        let out = ([$r.stdout $r.stderr] | str join "\n")
-        let hi = ($out | lines | where ($it | str starts-with "Hi ") | get 0? | default "")
-        if ($hi | is-empty) {
+        if ($key_user | is-empty) {
             print "github:  denied"
         } else {
-            print $"github:  ($hi | parse 'Hi {user}!{rest}' | get user.0)"
+            print $"github:  ($key_user)"
         }
     }
 
-    if not $in_sync { exit 1 }
+    let gh_user = (gh-account)
+    if ($gh_user | is-empty) {
+        print "gh:      (no login in this directory's config dir)"
+    } else {
+        print $"gh:      ($gh_user)"
+    }
+
+    # git pushes as the key's account while `gh` acts as its own, routed by
+    # separate configs. If they disagree, one of the two is aimed at the wrong
+    # account for this directory.
+    let accounts_agree = if (($key_user | is-empty) or ($gh_user | is-empty)) {
+        true
+    } else if $key_user == $gh_user {
+        true
+    } else {
+        print $"(ansi red_bold)MISMATCH:(ansi reset) git pushes as ($key_user) but gh acts as ($gh_user)"
+        print "  ~/.local/bin/gh and .config/git/identity-* disagree on this directory"
+        false
+    }
+
+    if not ($in_sync and $accounts_agree) { exit 1 }
 }

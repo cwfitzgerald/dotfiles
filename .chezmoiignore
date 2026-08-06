@@ -20,6 +20,8 @@ Library/**
 .config/jj/conf.d/**
 .config/git
 .config/git/identity-*
+{{/* One GitHub account, so gh needs no routing and ~/.config/gh is enough. */}}
+.local/bin/gh
 {{- end }}
 {{- if not (get . "workEmail") }}
 {{/* Single identity, so ~/.ssh/config has no per-directory Match blocks and
