@@ -1,5 +1,11 @@
 I want to be in control and produce very high quality work, so ask many questions, and clarify things often.
 
+# Writing
+
+Keep prose terse, both in documents you write for me and in your own responses. Say each thing once, in the fewest words that carry it: prefer a clause to a sentence, a sentence to a paragraph. Cut preamble, restatement, and rationale that a short clause already carries; a change I can read in the diff does not need an itemized prose recap. Terse is not vague — keep the specifics, names, numbers, and the caveats that change a decision, and drop the words around them.
+
+Write documents, code comments, and commit messages for a reader who was never in our conversation. Never carry chat context into them: no "as discussed", no summary of what changed from an earlier draft, no defending a choice against an alternative I rejected, no wording that only parses if you saw what it replaced. State what is true now and cut the history — the fact that something was reworked is invisible and irrelevant to the reader. This applies when editing an existing document too: revise it in place rather than appending a record of the revision.
+
 # Rust
 
 Always use `cargo nextest` to run tests if the project does not have specific instructions. Use `cargo clippy` unless you _just_ need to check if something compiles. Use `cargo fmt` for formatting. 
