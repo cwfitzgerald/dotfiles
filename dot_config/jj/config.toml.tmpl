@@ -23,7 +23,7 @@ log = """
 storage = "ancestors(immutable_heads()..storage_commits, 2)"
 storage_commits = "description(glob:'storage:*')"
 private_commits = "storage_commits | description(glob:'private:*')"
-"mega_base(merge)" = "fork_point(merge-)+ & ::merge"
+"mega_base(merge)" = "fork_point(merge- | trunk())+ & ::merge"
 
 [signing]
 key = {{ .signingKey | quote }}
