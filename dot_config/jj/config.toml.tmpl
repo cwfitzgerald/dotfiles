@@ -9,7 +9,7 @@ abandon-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj
 fmt-branch = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scripts/fmt-branch.nu']
 log-gpg = ["log", "--config", "ui.show-cryptographic-signatures=true"]
 pr-diff = ["diff", "-f", "fork_point(@ | trunk())", "-t", "@"]
-update = ["rebase", "-s", "roots(trunk()..@)", "-d", "trunk()"]
+update = ["rebase", "-s", "stems", "-d", "trunk()"]
 ws-rm = ["util", "exec", "--", "nu", '{{ .chezmoi.homeDir }}/.config/jj/scripts/ws-rm.nu']
 
 [revsets]
@@ -23,7 +23,9 @@ log = """
 storage = "ancestors(immutable_heads()..storage_commits, 2)"
 storage_commits = "description(glob:'storage:*')"
 private_commits = "storage_commits | description(glob:'private:*')"
-"mega_base(merge)" = "fork_point(merge- | trunk())+ & ::merge"
+'stems(x)' = 'roots(trunk()..x)'
+'stems' = 'stems(@)'
+
 
 [signing]
 key = {{ .signingKey | quote }}
