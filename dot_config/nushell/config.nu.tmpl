@@ -18,6 +18,9 @@
 # them for future reference.
 $env.config.buffer_editor = [{{ if eq .chezmoi.os "windows" }}"code.cmd"{{ else }}"code"{{ end }}, "--wait"]
 $env.config.show_banner = false
+
+# Written by env.nu; empty on machines without mise.
+use ($nu.default-config-dir | path join "mise.nu")
 {{ if eq .chezmoi.os "windows" }}
 # Update all important winget packages
 def update-all [] {
