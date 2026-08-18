@@ -164,9 +164,18 @@
   {{/* linear tracks work issues, so enable it only where a work identity exists. */ -}}
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": false,
-    "github@claude-plugins-official": true{{ if get . "workEmail" }},
+    "github@claude-plugins-official": true,
+    "context-mode@context-mode": true{{ if get . "workEmail" }},
     "linear@claude-plugins-official": true
     {{- end }}
+  },
+  "extraKnownMarketplaces": {
+    "context-mode": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/mksglu/context-mode.git"
+      }
+    }
   },
   "autoCompactWindow": 430000,
   "autoUpdatesChannel": "latest",
