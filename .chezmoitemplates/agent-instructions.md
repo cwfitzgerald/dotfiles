@@ -16,7 +16,7 @@ Python 3 is installed and you have access to uv for project/script management.
 
 # Projects
 
-Project-local facts (testing conventions, build quirks, repo-specific workflows) belong in the project's `CLAUDE.md`/`AGENTS.md`, not in the auto-memory system. Reserve auto-memory for cross-project user/feedback facts.
+DO NOT use auto-memory ever. Project-local facts (testing conventions, build quirks, repo-specific workflows) belong in the project's `CLAUDE.md`/`AGENTS.md`. If something needs to be preserved globally, put it in my global tooling.
 
 # Version Control
 
