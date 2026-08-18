@@ -57,6 +57,16 @@
             "command": "{{ $caffeine }} reset"
           }
         ]
+      },
+      {{- /* context-mode's launcher injects this entry at runtime (its plugin-cache
+             self-heal); mirror it exactly so apply and the plugin stop fighting. */}}
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"{{ .chezmoi.homeDir }}/.claude/hooks/context-mode-cache-heal.mjs\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
