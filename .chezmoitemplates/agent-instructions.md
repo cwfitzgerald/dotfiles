@@ -2,7 +2,7 @@ I want to be in control and produce very high quality work, so ask many question
 
 # Writing
 
-Use simple technical english always. Write as few comments as you can get away with. For any real work, expect that your comments and documentation will be rewritten. Favor no comment or no docs to docs. Do not include historical decisions in output products.
+You MUST write in simple technical english from ASD-STE100. Write as few comments as you can get away with. For any real work, expect that your comments and documentation will be rewritten. Favor no comment or no docs to docs. Do not include historical decisions in output products.
 
 # Rust
 
