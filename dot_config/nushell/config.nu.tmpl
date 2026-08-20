@@ -21,6 +21,24 @@ $env.config.show_banner = false
 
 # Written by env.nu; empty on machines without mise.
 use ($nu.default-config-dir | path join "mise.nu")
+
+# jj speaks clap's dynamic completion protocol; the fish wire format is
+# value<TAB>description lines, which maps directly onto nushell records.
+let jj_completer = {|spans: list<string>|
+    with-env { COMPLETE: fish } { ^jj -- ...$spans }
+    | lines
+    | each {|line|
+        let parts = $line | split row "\t"
+        { value: $parts.0, description: ($parts | get 1? | default "") }
+    }
+}
+
+$env.config.completions.external.completer = {|spans: list<string>|
+    match $spans.0 {
+        "jj" => { do $jj_completer $spans }
+        _ => null
+    }
+}
 {{ if eq .chezmoi.os "windows" }}
 # Update all important winget packages
 def update-all [] {
