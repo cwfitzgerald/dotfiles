@@ -7,8 +7,9 @@ is a live config file — everything is a *source* file that chezmoi renders int
 
 `cwfitzgerald/dotfiles` is a **public GitHub repo**, and chezmoi is configured with
 `autoCommit = true` / `autoPush = true`. Any file you write here is committed and
-pushed to the open internet on the next `chezmoi apply` or `chezmoi add`. There is
-no staging area and no review step. Treat every edit as publishing.
+pushed to the open internet on the next `chezmoi add` or `chezmoi re-add` — those
+commit the whole source directory, not just the file named. There is no staging
+area and no review step. Treat every edit as publishing.
 
 Never write into this repo:
 
