@@ -150,3 +150,12 @@ doing later.
   needed; the default worker model is fine.
 - Run subagents in parallel only per the disjoint-scope rule above.
 {{- end }}
+{{- if eq .harness "cursor" -}}
+- Spawn subagents with the Task tool, choosing the `model` and
+  `subagent_type` per work item using the subagent guidance in the global
+  instructions. The fresh-eyes review in step 6 is serious work: use `opus`.
+- To run subagents in parallel, issue the multiple Task calls in a single
+  message.
+- Do not switch to Plan mode. The step 4 checkpoint is the plan, and Plan
+  mode is read-only, so it would block the execution phase.
+{{- end }}

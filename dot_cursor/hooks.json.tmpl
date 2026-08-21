@@ -1,0 +1,35 @@
+{{- $hooksDir := printf "%s/.cursor/hooks" .chezmoi.homeDir -}}
+{{- /* pythonw, not python: the hook harness spawns commands without a console,
+       and a console-subsystem child then flashes a new console window. */ -}}
+{{- $caffeine := printf "python3 '%s/caffeine.py'" $hooksDir -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{- $caffeine = printf "pythonw '%s/caffeine.py'" $hooksDir -}}
+{{- else if eq .chezmoi.os "linux" -}}
+{{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
+{{- $caffeine = "pythonw.exe 'C:/Users/conno/.cursor/hooks/caffeine.py'" -}}
+{{- end -}}
+{{- /* Cursor already runs ~/.claude/settings.json, mapping the event names, so
+       this file declares only the two events that mapping drops. Every source
+       that matches an event runs, so restating the mapped ones here would fire
+       them twice -- and since SubagentStop maps but SubagentStart does not, the
+       doubled release would drain holds belonging to still-running agents.
+
+       This therefore depends on Settings -> Rules, Skills, Subagents ->
+       "Include third-party Plugins, Skills, and other configs" staying on. With
+       it off, an acquire here has no release to answer it and the hold lives
+       until STALE_TTL sweeps it. */ -}}
+{
+  "version": 1,
+  "hooks": {
+    "subagentStart": [
+      {
+        "command": "{{ $caffeine }} acquire"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "{{ $caffeine }} interrupt"
+      }
+    ]
+  }
+}

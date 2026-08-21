@@ -1,0 +1,7 @@
+{{- /* Cursor has no global AGENTS.md; an alwaysApply rule is the equivalent.
+       The .mdc extension is required -- a .md file here is ignored. */ -}}
+---
+alwaysApply: true
+---
+
+{{ template "agent-instructions.md" (merge (dict "harness" "cursor") .) -}}

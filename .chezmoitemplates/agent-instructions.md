@@ -38,7 +38,7 @@ I have two GitHub accounts, and a wrapper on `PATH` routes `gh` to the one that 
 {{ end }}
 My global configuration — agent instructions, hooks, settings, `jj`/git/ssh/shell config — is managed by chezmoi, with its source at `~/.local/share/chezmoi`. Files under `~` like `~/.claude/CLAUDE.md` or `~/.gitconfig` are generated; hand-edits there are reverted on the next apply.
 
-So: any change to Claude, Codex, Pi, `jj`, or other dev-tool configuration must go through chezmoi rather than the live file, and if you find yourself about to hand-edit a config file that isn't managed yet, bring it under chezmoi first. To do either, work in `~/.local/share/chezmoi` and follow that repo's `AGENTS.md`, which covers the layout, the workflow, and the constraints on what may be written there.
+So: any change to Claude, Codex, Cursor, Pi, `jj`, or other dev-tool configuration must go through chezmoi rather than the live file, and if you find yourself about to hand-edit a config file that isn't managed yet, bring it under chezmoi first. To do either, work in `~/.local/share/chezmoi` and follow that repo's `AGENTS.md`, which covers the layout, the workflow, and the constraints on what may be written there.
 
 # Harness Instructions
 
@@ -68,4 +68,15 @@ When delegating work to subagents via the Agent tool, pass an explicit `model` a
 Use `subagent_type: "Explore"` for read-only research when it fits, and `"general-purpose"` for everything else.
 
 If you are Fable, do not re-trigger a subagent if it gets stuck, it will resume as Fable.
+{{- end }}
+{{- if eq .harness "cursor" }}
+Cursor leaves a subagent's `model` at `inherit` unless I ask otherwise; this is me asking. When delegating work with the Task tool, pass an explicit `model` and match the tier to the work item's difficulty rather than defaulting everything to one model. The tiers below name a model family, not a slug — take the matching slug off the list the Task tool gives you.
+
+- `opus` for serious work and anything needing critical thinking: non-trivial implementation, debugging, design-sensitive research, architectural judgment, and fresh-eyes review.
+- `sol` as the workhorse for moderate, well-scoped tasks: routine implementation, standard research, and code reading that needs some judgment but not deep reasoning — a good default when a task is neither hard nor trivial.
+- `composer` for cheap, fast, mechanical work whose output I can verify at a glance: running tests and reporting results, simple renames, straightforward "find where X is defined" lookups, file/state checks.
+- When in doubt between two tiers, pick the higher one — a failed cheap agent costs more than a successful expensive one.
+- Never use `fable` unless I explicitly ask; fable is reserved for orchestration, not delegated work.
+
+Use `subagent_type: "explore"` for read-only research when it fits, and `"generalPurpose"` for everything else.
 {{- end }}

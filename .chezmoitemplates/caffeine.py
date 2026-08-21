@@ -26,13 +26,21 @@ those, an Esc pins the machine awake until the hold expires. Conversely,
 SessionStart fires on `compact` and `fork` *mid-turn*, so `reset` ignores those
 sources rather than dropping a live hold.
 
-Both harnesses share this script and this state dir, and both name the same
-SessionStart sources, so one keeper covers the machine. They diverge on what
-exists: Codex has no Notification, StopFailure or PostToolUseFailure, so it
-gets no interrupt signal and falls back to SessionEnd plus the expiry. Its
-Stop/SubagentStop payloads also omit `background_tasks`, so bg there is the
-arithmetic path -- sound only because Codex fires SubagentStop solely for the
-ThreadSpawn agents that fired SubagentStart.
+All three harnesses share this script and this state dir, so one keeper covers
+the machine. They diverge on what exists. Codex has no Notification,
+StopFailure or PostToolUseFailure, so it gets no interrupt signal and falls
+back to SessionEnd plus the expiry. Cursor runs Claude's hook config directly,
+mapping the event names, so it inherits most of that wiring and declares only
+the two events the mapping drops; PostToolUseFailure is one of them, so Esc is
+caught there too, but Notification and StopFailure have no equivalent and an
+API error falls to the expiry. Neither Codex nor Cursor puts `background_tasks`
+in its Stop/SubagentStop payloads, so bg on both is the arithmetic path --
+sound only because each fires SubagentStop exactly once per agent that fired
+SubagentStart. Only Claude names a SessionStart source, so the RESET_SOURCES
+filter is a no-op on the other two, which is correct: both fire that event
+once, at the real start of a session. Cursor keys sessionStart/sessionEnd on
+`session_id` and every other event on `conversation_id`, which it documents as
+the same value.
 
 Wake backends: SetThreadExecutionState on Windows, caffeinate(8) on macOS.
 Elsewhere the keeper only tracks state and logs a warning.

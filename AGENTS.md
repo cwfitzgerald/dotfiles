@@ -116,23 +116,28 @@ chezmoi data
 ## Agent instructions
 
 `.chezmoitemplates/agent-instructions.md` is the single source for my global agent
-instructions. It is rendered into three targets, each passing a `harness` value:
+instructions. It is rendered into four targets, each passing a `harness` value:
 
 | Target | Source | `.harness` |
 | --- | --- | --- |
 | `~/.claude/CLAUDE.md` | `dot_claude/CLAUDE.md.tmpl` | `claude` |
 | `~/.codex/AGENTS.md` | `dot_codex/AGENTS.md.tmpl` | `codex` |
+| `~/.cursor/rules/global.mdc` | `dot_cursor/rules/global.mdc.tmpl` | `cursor` |
 | `~/.pi/agent/AGENTS.md` | `dot_pi/agent/AGENTS.md.tmpl` | `pi` |
 
 Harness-specific guidance goes in a `{{ if eq .harness "..." }}` block; anything
-outside those blocks reaches all three. `.chezmoitemplates/skill-oversee.md` is
-shared the same way between the Claude and Codex `oversee` skills.
+outside those blocks reaches all four. `.chezmoitemplates/skill-oversee.md` is
+shared the same way between the Claude, Codex, and Cursor `oversee` skills.
+
+Cursor is the odd one: it loads Claude's and Codex's skills and hooks directly,
+so `dot_cursor` holds only what that misses or must shadow. Read the comment in
+`dot_cursor/hooks.json.tmpl` before adding an event there.
 
 Edits to that template are edits to my instructions on every machine — keep it
 tight, and keep it employer-agnostic per the rules above.
 
 ## Scope
 
-Any change to Claude, Codex, Pi, `jj`, git, `gh`, ssh, or shell configuration belongs
+Any change to Claude, Codex, Cursor, Pi, `jj`, git, `gh`, ssh, or shell configuration belongs
 here, not in the live file. If a config file isn't managed yet, `chezmoi add` it
 first, then edit the source.
