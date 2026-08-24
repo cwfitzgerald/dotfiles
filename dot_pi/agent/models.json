@@ -1,0 +1,25 @@
+{
+  "providers": {
+    "mlx": {
+      "baseUrl": "http://127.0.0.1:11234/v1",
+      "api": "openai-completions",
+      "apiKey": "mlx-serve",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": true,
+        "maxTokensField": "max_tokens",
+        "thinkingFormat": "qwen"
+      },
+      "models": [
+        {
+          "id": "ddalcu/Muse-Glimmer-30B-MLX-Serve-4bit",
+          "name": "Muse Glimmer 30B MLX Serve",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 131072,
+          "maxTokens": 16384
+        }
+      ]
+    }
+  }
+}
