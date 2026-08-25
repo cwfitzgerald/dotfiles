@@ -47,6 +47,8 @@ The following commands ALWAYS require `sandbox_permissions: "require_escalated"`
 - `jj`
 - `gh`
 
+Never give feedback through the built-in PR review system. Give all review feedback in the task conversation.
+
 When delegating work to subagents, pass an explicit `model` and `reasoning_effort` when the spawn tool supports an override, and match both to the work item's difficulty rather than defaulting everything to one configuration:
 
 - `model: "gpt-5.6-sol"` with `reasoning_effort: "high"` for serious work and anything needing critical thinking: non-trivial implementation, debugging, design-sensitive research, architectural judgment, and fresh-eyes review. Use `"xhigh"` for the hardest unusually subtle tasks.
