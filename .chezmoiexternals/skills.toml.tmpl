@@ -1,0 +1,46 @@
+{{- $root := . -}}
+{{- range $dir := glob (joinPath .chezmoi.sourceDir "skills" "*") -}}
+{{- if (stat $dir).isDir -}}
+{{- $name := base $dir -}}
+{{- $settings := dict -}}
+{{- $manifest := joinPath $dir "skill.toml" -}}
+{{- if stat $manifest -}}
+{{- $settings = include $manifest | fromToml -}}
+{{- end -}}
+{{- $targets := list "shared" "claude" -}}
+{{- if hasKey $settings "targets" -}}
+{{- $targets = $settings.targets -}}
+{{- end -}}
+{{- range $harness := $targets -}}
+{{- if not (hasKey $root.skillRoots $harness) -}}
+{{- fail (printf "skill %s: unknown target %s" $name $harness) -}}
+{{- end -}}
+{{- $entry := dict "type" "archive" "exact" true -}}
+{{- if hasKey $settings "archive" -}}
+{{- $entry = mergeOverwrite $entry (deepCopy $settings.archive) -}}
+{{- else -}}
+{{- $skill := joinPath $dir "SKILL.md" -}}
+{{- if not (stat $skill) -}}
+{{- $skill = joinPath $dir "SKILL.md.tmpl" -}}
+{{- end -}}
+{{- if not (stat $skill) -}}
+{{- fail (printf "skill %s: expected SKILL.md or SKILL.md.tmpl" $name) -}}
+{{- end -}}
+{{- $path := replace "\\" "/" $skill -}}
+{{- if eq $root.chezmoi.os "windows" -}}
+{{- $path = printf "/%s" $path -}}
+{{- end -}}
+{{- $_ := set $entry "url" (printf "file://%s" $path) -}}
+{{- $_ := set $entry "format" "tar" -}}
+{{- $_ := set $entry "exclude" (list "skill.toml") -}}
+{{/* Render each folder as a chezmoi source, then install its exact archive. */}}
+{{- $args := list "--config" $root.chezmoi.configFile "--source" $dir
+    "--destination" $root.chezmoi.destDir "--cache" $root.chezmoi.cacheDir
+    "--override-data" (dict "harness" $harness | toJson)
+    "archive" "--format" "tar" -}}
+{{- $_ := set $entry "filter" (dict "command" $root.chezmoi.executable "args" $args) -}}
+{{- end -}}
+{{ dict (printf "%s/%s" (index $root.skillRoots $harness) $name) $entry | toToml }}
+{{ end -}}
+{{- end -}}
+{{- end -}}

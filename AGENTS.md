@@ -44,9 +44,10 @@ anything about who I work for.
 ```
 .chezmoi.toml.tmpl        Config template; prompts for identity on `chezmoi init`.
 .chezmoidata.toml         Static data, re-read every apply (unlike chezmoi.toml).
-.chezmoiexternal.toml     Third-party content fetched from URLs (skills, archives).
+.chezmoiexternals/       Templates that define external files and archives.
 .chezmoiignore            Target paths chezmoi should NOT create. Itself a template.
 .chezmoitemplates/        Named partials, included via `{{ template "name" . }}`.
+skills/                  Local skill sources and archive settings, one folder per skill.
 dot_foo/                  -> ~/.foo
 readonly_Documents/       -> ~/Documents, mode 0444
 AppData/, Library/        OS-specific trees, gated in .chezmoiignore.
@@ -127,7 +128,7 @@ instructions. It is rendered into four targets, each passing a `harness` value:
 | `~/.pi/agent/AGENTS.md` | `dot_pi/agent/AGENTS.md.tmpl` | `pi` |
 
 Harness-specific guidance goes in a `{{ if eq .harness "..." }}` block; anything
-outside those blocks reaches all four. `.chezmoitemplates/skill-oversee.md` is
+outside those blocks reaches all four. `skills/oversee/SKILL.md.tmpl` is
 shared the same way between the Claude, Codex, and Cursor `oversee` skills.
 
 Cursor is the odd one: it loads Claude's and Codex's skills and hooks directly,
@@ -136,6 +137,41 @@ so `dot_cursor` holds only what that misses or must shadow. Read the comment in
 
 Edits to that template are edits to my instructions on every machine — keep it
 tight, and keep it employer-agnostic per the rules above.
+
+## Skills
+
+Each folder in `skills/` defines one skill. Add `SKILL.md` and any supporting
+files to install a skill in `.agents/skills` and `.claude/skills`. Codex and
+Cursor read the shared `.agents/skills` directory. Pi reads it through its
+`skills` setting.
+
+Local folders use chezmoi source names: `.tmpl` renders a template,
+`executable_` marks an executable file, and `dot_` marks a hidden file.
+Templates receive `.harness`. Its value is `shared` for `.agents/skills`.
+
+To select different targets, add `skill.toml` inside the skill folder:
+
+```toml
+targets = ["claude", "codex", "cursor"]
+```
+
+The target names and paths are in `.chezmoidata/skills.toml`. Target selection
+sets install paths; agents can also read other agents' skill directories.
+
+For a downloaded skill, use an `[archive]` table in `skill.toml` instead of
+local files. Set `url`, `include`, `stripComponents`, and `refreshPeriod` as
+needed; see `skills/agent-review/skill.toml`.
+
+`.chezmoiexternals/skills.toml.tmpl` discovers the folders. It renders local
+folders with `chezmoi archive` and installs all skills as exact archives.
+The installed archives exclude `skill.toml`.
+
+Use `chezmoi diff`, then `chezmoi apply -v`. Exact directories remove deleted
+skills and files on apply. Hidden entries directly inside each skill root
+are excluded in `.chezmoiignore`, with all their contents. Add named exceptions
+there before another tool installs a non-hidden skill. Keep the five
+`exact_skills/.chezmoiignore` files: they retain empty skill roots so cleanup
+also works after the last skill is removed.
 
 ## Scope
 

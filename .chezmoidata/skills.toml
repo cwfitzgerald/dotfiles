@@ -1,0 +1,6 @@
+[skillRoots]
+shared = ".agents/skills"
+claude = ".claude/skills"
+codex = ".codex/skills"
+cursor = ".cursor/skills"
+pi = ".pi/agent/skills"

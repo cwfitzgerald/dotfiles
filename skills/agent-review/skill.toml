@@ -1,0 +1,5 @@
+[archive]
+url = "https://github.com/cwfitzgerald/agent-review-helper/archive/refs/heads/trunk.tar.gz"
+stripComponents = 4
+include = ["*/.claude/skills/agent-review/**"]
+refreshPeriod = "168h"

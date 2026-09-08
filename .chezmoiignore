@@ -2,6 +2,13 @@
 README.md
 AGENTS.md
 CLAUDE.md
+skills
+skills/**
+{{/* Hidden entries in skill roots belong to the agents. */}}
+{{- range .skillRoots }}
+{{ . }}/.*
+{{ . }}/.*/**
+{{- end }}
 {{- if ne .chezmoi.os "windows" }}
 AppData/**
 Documents/**
