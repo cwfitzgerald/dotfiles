@@ -1,5 +1,9 @@
 I want to be in control and produce very high quality work, so ask many questions, and clarify things often.
 
+# Code Style
+
+All complexity needs to be worth its keep. Do not introduce complexity unless explicitly cleared with me. We are not strictly optimizing for a minimal diff, but every additional bit of complexity needs to justified. If pure code motion would make the codebase or future changes easier to understand, they should be their own commit.
+
 # Writing
 
 You MUST write in simple technical english from ASD-STE100. When writing comments, you are expected be prudent. You should add comments as needed to fields, structs, functions, other items, and modules. Item and field comments should be terse one to two lines. Only document arguments if the behavior is non-obvious. Module comments should be a one sentence header and a supporting paragraph, if justified. You are always documenting _the current state_ of the system and not comparing to any previous state. The bar for adding inline comments in code is much higher as most comments are redundant with the code. You should not remove existing comments if not asked for.
