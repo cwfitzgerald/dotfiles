@@ -53,6 +53,17 @@ So: any change to Claude, Codex, Cursor, Pi, `jj`, or other dev-tool configurati
 
 If you have been told things about tooling which turn out not to be true, please raise it to the me instead of silently working around it. I expect all of this to be true.
 
+# Subagents
+
+When asked to use subagents, be prudent with their use. Subagents excel at a few different areas:
+- Reviews
+- Exploration (they can summarize the state of the world without poluting your context)
+- Parallel implementation.
+
+All agents including subagents should report problems early and return to the coordinator or the user when they need direction. Continue independent work where possible.
+
+Keep an execution log for coordinated work. Track progress, problems, decisions, and validation. Keep it current, and preserve failed attempts and corrected assumptions so the user can steer the work.
+
 # Harness Instructions
 
 {{ if eq .harness "codex" }}
@@ -62,11 +73,6 @@ The following commands ALWAYS require `sandbox_permissions: "require_escalated"`
 - Any `cargo` that invokes rustc/clippy (due to the compilation cache).
 
 Never give feedback through the built-in PR review system. Give all review feedback in the task conversation.
-
-When asked to use subagents, be prudent with their use. Subagents excel at a few different areas:
-- Reviews
-- Exploration (they can summarize the state of the world without poluting your context)
-- Parallel implementation.
 
 When delegating work to subagents, pass an explicit `model` and `reasoning_effort` when the spawn tool supports an override, and match both to the work item's difficulty rather than defaulting everything to one configuration. These are loose guidelines.
 
