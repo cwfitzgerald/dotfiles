@@ -55,14 +55,17 @@ The following commands ALWAYS require `sandbox_permissions: "require_escalated"`
 
 Never give feedback through the built-in PR review system. Give all review feedback in the task conversation.
 
-When delegating work to subagents, pass an explicit `model` and `reasoning_effort` when the spawn tool supports an override, and match both to the work item's difficulty rather than defaulting everything to one configuration:
+When asked to use subagents, be prudent with their use. Subagents excel at a few different areas:
+- Reviews
+- Exploration (they can summarize the state of the world without poluting your context)
+- Parallel implementation.
 
-- `model: "gpt-5.6-sol"` with `reasoning_effort: "high"` for serious work and anything needing critical thinking: non-trivial implementation, debugging, design-sensitive research, architectural judgment, and fresh-eyes review. Use `"xhigh"` for the hardest unusually subtle tasks.
-- `model: "gpt-5.6-terra"` with `reasoning_effort: "medium"` as the workhorse for moderate, well-scoped tasks: routine implementation, standard research, and code reading that needs some judgment but not deep reasoning.
-- `model: "gpt-5.6-terra"` with `reasoning_effort: "low"` for cheap, fast, mechanical work whose output I can verify at a glance: running tests and reporting results, simple renames, straightforward "find where X is defined" lookups, and file/state checks.
-- When in doubt between two configurations, pick the more capable model or higher effort — a failed cheap agent costs more than a successful expensive one.
+When delegating work to subagents, pass an explicit `model` and `reasoning_effort` when the spawn tool supports an override, and match both to the work item's difficulty rather than defaulting everything to one configuration. These are loose guidelines.
 
-Model or effort overrides require a limited-context fork: set `fork_turns` to `"none"` or a positive turn count. A full-history fork (`fork_turns: "all"` or omitted) inherits the parent model and effort; use that when the subagent needs the complete conversation more than it needs a different configuration.
+- `model: "gpt-6-astra"` with `reasoning_effort: "low"` as your default. Astra is extremely efficient token-per-task so for any kind of thinking start here. For really tough jobs, you can elevate to `medium` or `high` as needed.
+- `model: "gpt-5.6-terra"` with `reasoning_effort: "medium"` for read-heavy think-light tasks. Doing research without thinking, doing large amounts of reading. If a task must chew through tokens inherently, use terra.
+
+Always set `fork_turns` to `"none"`. We want subagents to be able to think independently of the root context. 
 {{- end }}
 {{ if eq .harness "claude" }}
 When delegating work to subagents via the Agent tool, pass an explicit `model` and match the tier to the work item's difficulty rather than defaulting everything to one model:
