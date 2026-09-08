@@ -35,7 +35,7 @@ Useful jj commands:
 - `jj diff --git -f <from> -t <to>` diffs `<from>` and `<to>`. You must always use `--git` for diffs.
 - `jj pr-diff --git` to diff current head against the latest commit from trunk it touches.
 
-When creating a workspace (aka worktree) (`jj workspace add`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. I have global configuration where this is configured to always be ignored. Use `jj ws-rm <name>` to remove a workspace and delete it in one swoop.
+When creating a workspace (might be referred to as worktree) (`jj workspace add`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. Importantly jj workspaces are _not_ git worktrees and you _cannot_ use git commands in them. I have global configuration where this is configured to always be ignored. Use `jj ws-rm <name>` to remove a workspace and delete it in one swoop.
 
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
