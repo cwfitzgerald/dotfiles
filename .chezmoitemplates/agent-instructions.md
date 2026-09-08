@@ -59,6 +59,7 @@ If you have been told things about tooling which turn out not to be true, please
 The following commands ALWAYS require `sandbox_permissions: "require_escalated"`:
 - `jj`
 - `gh`
+- Any `cargo` that invokes rustc/clippy (due to the compilation cache).
 
 Never give feedback through the built-in PR review system. Give all review feedback in the task conversation.
 
