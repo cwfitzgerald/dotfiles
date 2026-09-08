@@ -2,7 +2,7 @@ I want to be in control and produce very high quality work, so ask many question
 
 # Writing
 
-You MUST write in simple technical english from ASD-STE100. Write as few comments as you can get away with. For any real work, expect that your comments and documentation will be rewritten. Favor no comment or no docs to docs. Do not include historical decisions in output products.
+You MUST write in simple technical english from ASD-STE100. When writing comments, you are expected be prudent. You should add comments as needed to fields, structs, functions, other items, and modules. Item and field comments should be terse one to two lines. Only document arguments if the behavior is non-obvious. Module comments should be a one sentence header and a supporting paragraph, if justified. You are always documenting _the current state_ of the system and not comparing to any previous state. The bar for adding inline comments in code is much higher as most comments are redundant with the code. You should not remove existing comments if not asked for.
 
 # Rust
 
@@ -20,7 +20,7 @@ DO NOT use auto-memory ever. Project-local facts (testing conventions, build qui
 
 # Version Control
 
-I use `jj` for version control. You have permission to access `jj diff --git --no-pager -f <from> -t <to>`. `@` is the working directory. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. Use `jj pr-diff --git --no-pager` to diff current head against the latest commit from trunk it touches. When creating a new repository, name the default branch `trunk` (not `main`).
+I use `jj` for version control. You have permission to access `jj diff --git --no-pager -f <from> -t <to>`. `@` is the working directory. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. Use `jj pr-diff --git --no-pager` to diff current head against the latest commit from trunk it touches. When creating a new repository, name the default branch `trunk` (not `main`). Use `jj file show -r <change_id> <file> --no-pager` to view a file from a specific commit.
 
 When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
 
@@ -39,6 +39,8 @@ I have two GitHub accounts, and a wrapper on `PATH` routes `gh` to the one that 
 My global configuration — agent instructions, hooks, settings, `jj`/git/ssh/shell config — is managed by chezmoi, with its source at `~/.local/share/chezmoi`. Files under `~` like `~/.claude/CLAUDE.md` or `~/.gitconfig` are generated; hand-edits there are reverted on the next apply.
 
 So: any change to Claude, Codex, Cursor, Pi, `jj`, or other dev-tool configuration must go through chezmoi rather than the live file, and if you find yourself about to hand-edit a config file that isn't managed yet, bring it under chezmoi first. To do either, work in `~/.local/share/chezmoi` and follow that repo's `AGENTS.md`, which covers the layout, the workflow, and the constraints on what may be written there.
+
+If you have been told things about tooling which turn out not to be true, please raise it to the me instead of silently working around it. I expect all of this to be true.
 
 # Harness Instructions
 

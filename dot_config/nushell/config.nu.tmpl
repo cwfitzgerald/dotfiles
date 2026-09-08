@@ -25,6 +25,11 @@ use ($nu.default-config-dir | path join "mise.nu")
 # jj speaks clap's dynamic completion protocol; the fish wire format is
 # value<TAB>description lines, which maps directly onto nushell records.
 let jj_completer = {|spans: list<string>|
+    let spans = if $spans.1? == "ws-rm" {
+        ["jj" "workspace" "forget"] | append ($spans | skip 2)
+    } else {
+        $spans
+    }
     with-env { COMPLETE: fish } { ^jj -- ...$spans }
     | lines
     | each {|line|
