@@ -24,9 +24,16 @@ DO NOT use auto-memory ever. Project-local facts (testing conventions, build qui
 
 # Version Control
 
-I use `jj` for version control. You have permission to access `jj diff --git --no-pager -f <from> -t <to>`. `@` is the working directory. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. Use `jj pr-diff --git --no-pager` to diff current head against the latest commit from trunk it touches. When creating a new repository, name the default branch `trunk` (not `main`). Use `jj file show -r <change_id> <file> --no-pager` to view a file from a specific commit.
+I use `jj` for version control. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. Use ``  When creating a new repository, name the default branch `trunk` (not `main`). Use `` to view a file from a specific commit.
 
 When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
+
+Useful jj commands:
+- `jj log --summary` prints which files were modified for each commit.
+- `jj log --stat` prints the LOC stats as well in git form.
+- `jj file show -r <change_id> <file>` prints 
+- `jj diff --git -f <from> -t <to>` diffs `<from>` and `<to>`. You must always use `--git` for diffs.
+- `jj pr-diff --git` to diff current head against the latest commit from trunk it touches.
 
 When creating a workspace (aka worktree) (`jj workspace add`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. I have global configuration where this is configured to always be ignored. Use `jj ws-rm <name>` to remove a workspace and delete it in one swoop.
 
