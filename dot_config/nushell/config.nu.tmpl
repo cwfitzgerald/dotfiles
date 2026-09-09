@@ -22,9 +22,6 @@ $env.config.show_banner = false
 # Written by env.nu; empty on machines without mise.
 use ($nu.default-config-dir | path join "mise.nu")
 
-# Written by env.nu; empty on machines without just.
-use ($nu.default-config-dir | path join "just-completions.nu") *
-
 # jj speaks clap's dynamic completion protocol; the fish wire format is
 # value<TAB>description lines, which maps directly onto nushell records.
 let jj_completer = {|spans: list<string>|
@@ -41,10 +38,20 @@ let jj_completer = {|spans: list<string>|
     }
 }
 
+# carapace covers every other external command, and emits nushell records
+# directly. Resolved once at startup so a machine without it stays quiet.
+let carapace_completer = if (which carapace | is-not-empty) {
+    {|spans: list<string>| ^carapace $spans.0 nushell ...$spans | from json }
+} else {
+    {|spans: list<string>| null }
+}
+
+# Known externs take priority; nushell only calls this for commands without a
+# signature. Give a tool its own arm only when carapace cannot do the job.
 $env.config.completions.external.completer = {|spans: list<string>|
     match $spans.0 {
         "jj" => { do $jj_completer $spans }
-        _ => null
+        _ => { do $carapace_completer $spans }
     }
 }
 {{ if eq .chezmoi.os "windows" }}
