@@ -1,5 +1,7 @@
 # Ghostty configuration (managed via chezmoi: dot_config/ghostty/config.tmpl)
 
+scrollback-limit = 100000000
+
 # Launch nushell, but via a login + interactive zsh so it inherits the full
 # env: .zprofile/.zshenv give PATH additions + VULKAN_SDK/VK_DRIVER_FILES/
 # RUSTC_WRAPPER, and .zshrc (interactive-only) adds llvm to PATH. zsh then
