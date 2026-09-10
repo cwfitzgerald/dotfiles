@@ -1,0 +1,24 @@
+prefix_rule(
+    pattern = ["jj"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["jj", "util", "exec"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["jj", "--no-pager", "util", "exec"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["cargo"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["just"],
+    decision = "allow",
+)
