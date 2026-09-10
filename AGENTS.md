@@ -3,6 +3,8 @@
 This repo is the chezmoi source directory for my global configuration. Nothing here
 is a live config file — everything is a *source* file that chezmoi renders into `~`.
 
+Use Git for version control in this repo. This repo does not use jj.
+
 ## This repo is public
 
 `cwfitzgerald/dotfiles` is a **public GitHub repo**, and chezmoi is configured with
