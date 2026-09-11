@@ -2,6 +2,11 @@
 
 scrollback-limit = 100000000
 
+{{ if eq .chezmoi.os "darwin" -}}
+font-codepoint-map = U+EC81-U+EC82=Symbols Nerd Font Mono
+
+{{ end -}}
+
 # Launch nushell, but via a login + interactive zsh so it inherits the full
 # env: .zprofile/.zshenv give PATH additions + VULKAN_SDK/VK_DRIVER_FILES/
 # RUSTC_WRAPPER, and .zshrc (interactive-only) adds llvm to PATH. zsh then

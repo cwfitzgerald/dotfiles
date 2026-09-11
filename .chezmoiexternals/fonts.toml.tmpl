@@ -1,0 +1,6 @@
+{{- if eq .chezmoi.os "darwin" }}
+["Library/Fonts"]
+type = "archive"
+url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/NerdFontsSymbolsOnly.zip"
+include = ["SymbolsNerdFontMono-Regular.ttf"]
+{{- end }}

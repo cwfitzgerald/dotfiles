@@ -22,6 +22,8 @@ $env.config.show_banner = false
 # Written by env.nu; empty on machines without mise.
 use ($nu.default-config-dir | path join "mise.nu")
 
+source ($nu.default-config-dir | path join "superline.nu")
+
 # jj speaks clap's dynamic completion protocol; the fish wire format is
 # value<TAB>description lines, which maps directly onto nushell records.
 let jj_completer = {|spans: list<string>|
