@@ -2,14 +2,11 @@
 {{- /* pythonw, not python: the hook harness spawns commands without a console,
        and a console-subsystem child then flashes a new console window. */ -}}
 {{- $caffeine := printf "python3 '%s/caffeine.py'" $hooksDir -}}
-{{- $notify := printf "'%s/notify.sh'" $hooksDir -}}
 {{- if eq .chezmoi.os "windows" -}}
 {{- $caffeine = printf "pythonw '%s/caffeine.py'" $hooksDir -}}
-{{- $notify = printf "powershell -ExecutionPolicy Bypass -File '%s/notify.ps1'" $hooksDir -}}
 {{- else if eq .chezmoi.os "linux" -}}
 {{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
 {{- $caffeine = "pythonw.exe 'C:/Users/conno/.codex/hooks/caffeine.py'" -}}
-{{- $notify = "powershell.exe -ExecutionPolicy Bypass -File '/mnt/c/Users/conno/.codex/hooks/notify.ps1'" -}}
 {{- end -}}
 {{- /* Codex supports exactly 11 events (HookEventName in the app-server
        protocol), keyed PascalCase, and the config struct is deny_unknown_fields
@@ -82,10 +79,6 @@
     "Stop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "{{ $notify }} 'Task completed' complete"
-          },
           {
             "type": "command",
             "command": "{{ $caffeine }} off"
