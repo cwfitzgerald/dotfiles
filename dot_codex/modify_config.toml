@@ -1,0 +1,2 @@
+{{- /* chezmoi:modify-template */ -}}
+{{ .chezmoi.stdin | fromToml | setValueAtPath "allow_login_shell" false | toToml }}
