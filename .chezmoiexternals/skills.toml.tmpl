@@ -28,7 +28,7 @@
 {{- end -}}
 {{- $path := replace "\\" "/" $skill -}}
 {{- if eq $root.chezmoi.os "windows" -}}
-{{- $path = printf "/%s" $path -}}
+{{- $path = regexReplaceAll "^[A-Za-z]:" $path "" -}}
 {{- end -}}
 {{- $_ := set $entry "url" (printf "file://%s" $path) -}}
 {{- $_ := set $entry "format" "tar" -}}
