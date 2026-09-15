@@ -1,31 +1,63 @@
 {
+  {{- /* Mirrors dot_codex/rules/default.rules. Claude has no "send to the
+         classifier" decision, so a Codex `prompt` carve-out is expressed by
+         leaving the command unmatched. Where Codex allows a whole binary but
+         prompts for one subcommand (jj util exec, git -c / bisect run /
+         submodule foreach, uv run <shell>), the safe subcommands are listed
+         one by one instead. */ -}}
+  {{- $jj := list "abandon" "absorb" "bookmark" "commit" "describe" "diff" "diffedit"
+        "duplicate" "edit" "evolog" "file" "fix" "git fetch" "git push" "git remote"
+        "help" "interdiff" "log" "metaedit" "new" "next" "op" "parallelize" "pr-diff"
+        "prev" "rebase" "redo" "resolve" "restore" "revert" "root" "show" "sign"
+        "simplify-parents" "split" "squash" "st" "status" "tag" "undo" "unsign"
+        "version" "workspace" "ws-rm" -}}
+  {{- $git := list "add" "apply" "blame" "branch" "cat-file" "checkout" "cherry-pick"
+        "clone" "commit" "config" "describe" "diff" "fetch" "for-each-ref" "grep"
+        "init" "lfs" "log" "ls-files" "ls-remote" "merge" "merge-base" "mv" "name-rev"
+        "pull" "push" "range-diff" "rebase" "reflog" "remote" "reset" "restore"
+        "rev-list" "rev-parse" "revert" "rm" "shortlog" "show" "show-ref" "stash"
+        "status" "submodule status" "submodule update" "submodule init" "switch"
+        "tag" "whoami" "worktree" -}}
+  {{- $gh := list "pr view" "pr list" "pr diff" "pr checks" "pr status"
+        "issue view" "issue list" "issue status"
+        "run view" "run list" "run watch"
+        "workflow view" "workflow list"
+        "repo view" "repo list"
+        "search code" "search commits" "search issues" "search prs" "search repos"
+        "release view" "release list" -}}
+  {{- $bare := list "cargo" "just" "rg" "find" "sed" "go" "gofmt" "pytest" "ruff"
+        "mypy" "pyright" "jq" -}}
+  {{- $uv := list "sync" "lock" "add" "remove" "init" "venv" "build" "tree" "export" "pip" -}}
+  {{- $npm := list "ci" "install" "run" "test" -}}
+  {{- $pnpm := list "install" "run" "test" }}
   "permissions": {
     "allow": [
-      "Bash(cargo build:*)",
-      "Bash(cargo check:*)",
-      "Bash(cargo clippy:*)",
-      "Bash(cargo clean:*)",
-      "Bash(cargo deny:*)",
-      "Bash(cargo doc:*)",
-      "Bash(cargo fmt:*)",
-      "Bash(cargo nextest:*)",
-      "Bash(cargo search:*)",
-      "Bash(cargo test:*)",
-      "Bash(cargo xtask:*)",
+      {{- range $c := $jj }}
+      "Bash(jj {{ $c }}:*)",
+      "Bash(jj --no-pager {{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $git }}
+      "Bash(git {{ $c }}:*)",
+      "Bash(git --no-pager {{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $gh }}
+      "Bash(gh {{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $bare }}
+      "Bash({{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $uv }}
+      "Bash(uv {{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $npm }}
+      "Bash(npm {{ $c }}:*)",
+      {{- end }}
+      {{- range $c := $pnpm }}
+      "Bash(pnpm {{ $c }}:*)",
+      {{- end }}
       "Bash(cat:*)",
-      "Bash(find:*)",
-      "Bash(gh api:*)",
-      "Bash(gh issue:*)",
-      "Bash(gh pr:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
-      "Bash(jj commit:*)",
-      "Bash(jj diff:*)",
-      "Bash(jj file show:*)",
-      "Bash(jj log:*)",
-      "Bash(jj pr-diff:*)",
-      "Bash(jj show:*)",
-      "Bash(jj st:*)",
       "Bash(ls:*)",
       "Bash(tail:*)",
       "Bash(wc:*)",

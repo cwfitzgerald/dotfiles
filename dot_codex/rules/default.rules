@@ -22,3 +22,113 @@ prefix_rule(
     pattern = ["just"],
     decision = "allow",
 )
+
+prefix_rule(
+    pattern = ["git"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["git", ["-c", "remote-ext"]],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["git", "bisect", "run"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["git", "submodule", "foreach"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["git", "--no-pager", ["-c", "remote-ext"]],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["git", "--no-pager", "bisect", "run"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["git", "--no-pager", "submodule", "foreach"],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", ["view", "list", "diff", "checks", "status"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["view", "list", "status"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "run", ["view", "list", "watch"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", ["view", "list"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["view", "list"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "search", ["code", "commits", "issues", "prs", "repos"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gh", "release", ["view", "list"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = [["rg", "find", "sed"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["uv", "run"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["uv", "run", ["bash", "zsh", "nu", "pwsh", "sh", "fish", "powershell"]],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = ["uv", "run", "--", ["bash", "zsh", "nu", "pwsh", "sh", "fish", "powershell"]],
+    decision = "prompt",
+)
+
+prefix_rule(
+    pattern = [["go", "gofmt", "pytest", "ruff", "mypy", "pyright", "jq"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["uv", ["sync", "lock", "add", "remove", "init", "venv", "build", "tree", "export", "pip"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["npm", ["ci", "install", "run", "test"]],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["pnpm", ["install", "run", "test"]],
+    decision = "allow",
+)
