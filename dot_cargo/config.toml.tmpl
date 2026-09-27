@@ -12,6 +12,11 @@ global-credential-providers = [
     "cargo:token-from-stdout op read op://Private/crates.io/api-key",
 {{- end }}
 ]
+
+# The git CLI reads core.sshCommand and ~/.ssh/config; cargo's built-in git
+# does not, so it cannot authenticate after the https -> ssh URL rewrite.
+[net]
+git-fetch-with-cli = true
 {{ if lookPath "kache" }}
 [build]
 rustc-wrapper = "kache"
