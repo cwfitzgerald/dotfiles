@@ -12,15 +12,15 @@
         { "pr": { "status": true } }
       ],
       "right": [
+        { "last_cmd_duration": { "min_run_time": 0 } },
         { "time": { "format": "%a %H:%M:%S" } },
-        { "padding": 1 }
+        { "padding": 0 }
       ]
     },
     {
       "left": [
         { "padding": 0 },
         { "separator": "round" },
-        { "last_cmd_duration": { "min_run_time": 0 } },
         "cmd",
         { "padding": 1 }
       ],
@@ -30,7 +30,7 @@
         "java",
         "python_env",
         "cargo",
-        { "padding": 0 }
+        { "padding": 1 }
       ]
     }
   ]
