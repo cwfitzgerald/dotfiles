@@ -3,8 +3,7 @@
   "rows": [
     {
       "left": [
-        { "time": { "format": "%a %H:%M:%S" } },
-        { "padding": 2 },
+        { "padding": 0 },
         { "separator": "round" },
         "read_only",
         { "cwd": { "max_length": 60, "wanted_seg_num": 5, "resolve_symlinks": false } },
@@ -12,12 +11,16 @@
         { "git": { "status_timeout_ms": 250 } },
         { "pr": { "status": true } }
       ],
-      "right": []
+      "right": [
+        { "time": { "format": "%a %H:%M:%S" } },
+        { "padding": 1 }
+      ]
     },
     {
       "left": [
-        "shell",
-        { "last_cmd_duration": { "min_run_time": 50 } },
+        { "padding": 0 },
+        { "separator": "round" },
+        { "last_cmd_duration": { "min_run_time": 0 } },
         "cmd",
         { "padding": 1 }
       ],
