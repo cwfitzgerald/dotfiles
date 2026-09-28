@@ -3,6 +3,7 @@
   "rows": [
     {
       "left": [
+        { "time": { "format": "%a %H:%M:%S" } },
         { "padding": 2 },
         { "separator": "round" },
         "read_only",
