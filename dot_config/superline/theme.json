@@ -42,7 +42,7 @@
       "version_bg": "mid_green",
       "version_fg": "dark_grey"
     },
-    "time": { "bg": "dark_grey", "fg": "mid_grey" },
+    "time": { "bg": "dark_grey", "fg": 246 },
     "local_ip": { "bg": "dark_grey", "fg": "white" },
     "memory_usage": { "bg": "warning_red", "fg": "white" },
     "ai_usage": {
