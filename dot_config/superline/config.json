@@ -1,0 +1,33 @@
+{
+  "theme": "theme.json",
+  "rows": [
+    {
+      "left": [
+        { "padding": 2 },
+        { "separator": "round" },
+        "read_only",
+        { "cwd": { "max_length": 60, "wanted_seg_num": 5, "resolve_symlinks": false } },
+        { "padding": 2 },
+        { "git": { "status_timeout_ms": 250 } },
+        { "pr": { "status": true } }
+      ],
+      "right": []
+    },
+    {
+      "left": [
+        "shell",
+        { "last_cmd_duration": { "min_run_time": 50 } },
+        "cmd",
+        { "padding": 1 }
+      ],
+      "right": [
+        { "separator": "round" },
+        "nvm",
+        "java",
+        "python_env",
+        "cargo",
+        { "padding": 0 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "defaults": { "fg": "green", "bg": "black" },
+  "modules": {
+    "battery": { "fg": "white", "bg": "warning_red" },
+    "cargo": { "fg": "black", "bg": "burnt_orange" },
+    "cwd": { "path_fg": 234, "bg_colors": [174, 173, 179, 107, 110, 140] },
+    "git": {
+      "remote_bg": "mid_grey",
+      "remote_fg": "light_grey",
+      "staged_bg": "forest_green",
+      "staged_fg": "white",
+      "notstaged_bg": "mid_red",
+      "notstaged_fg": "white",
+      "untracked_bg": "warning_red",
+      "untracked_fg": "white",
+      "conflicted_bg": "light_red",
+      "conflicted_fg": "white",
+      "clean_bg": "blue",
+      "clean_fg": "white",
+      "dirty_bg": "bright_orange",
+      "dirty_fg": "white"
+    },
+    "pr": {
+      "draft_bg": "mid_grey",
+      "draft_fg": "white",
+      "open_bg": "forest_green",
+      "open_fg": "white",
+      "merged_bg": "nice_purple",
+      "merged_fg": "white",
+      "closed_bg": "mid_red",
+      "closed_fg": "white",
+      "status_success_fg": "light_green",
+      "status_failure_fg": "warning_red",
+      "status_pending_fg": "dark_yellow"
+    },
+    "kubernetes": { "fg": "white", "bg": "blue", "icon": "󱃾" },
+    "readonly": { "fg": 254, "bg": 124 },
+    "sudo": { "fg": "white", "bg": "nice_purple", "symbol": "⚿" },
+    "python": {
+      "env_fg": "dark_grey",
+      "env_bg": "light_green",
+      "version_bg": "mid_green",
+      "version_fg": "dark_grey"
+    },
+    "time": { "bg": "dark_grey", "fg": "mid_grey" },
+    "local_ip": { "bg": "dark_grey", "fg": "white" },
+    "memory_usage": { "bg": "warning_red", "fg": "white" },
+    "ai_usage": {
+      "claude_bg": "burnt_orange",
+      "claude_fg": "black",
+      "codex_bg": "forest_green",
+      "codex_fg": "white",
+      "threshold_bg": "warning_red"
+    },
+    "cmd": {
+      "passed_fg": "green",
+      "failed_bg": "warning_red",
+      "failed_fg": "white",
+      "user_symbol": ""
+    },
+    "last_cmd_duration": { "bg": "black", "fg": "green", "time_icon": "" },
+    "node": { "bg": "forest_green", "inactive_bg": "burgundy", "fg": "white" },
+    "java": { "bg": "white", "fg": 160 },
+    "update": { "bg": "nice_purple", "fg": "white", "icon": "" },
+    "os": { "bg": "dark_grey", "fg": "white" }
+  }
+}
