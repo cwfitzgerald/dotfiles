@@ -93,6 +93,13 @@ When delegating work to subagents via the Agent tool, pass an explicit `model` a
 Use `subagent_type: "Explore"` for read-only research when it fits, and `"general-purpose"` for everything else.
 
 If you are Fable, do not re-trigger a subagent if it gets stuck, it will resume as Fable.
+
+To get the result of a long command, such as a build or a test run, run it in the foreground with a `timeout` long enough to finish (the maximum is 600000, 10 minutes). If the command is in the background, because you started it there or because it reached its timeout:
+- If you are the main agent, end your turn. The completion notice wakes you.
+- If you are a subagent, do not end your turn. Wait with one foreground Bash call at a time, with `timeout: 600000`, and repeat it until the job ends:
+  `for i in $(seq 110); do tail -n 1 "$F" | grep -qE '^\[(exited with code [0-9]+|killed)\]$' && break; sleep 5; done; tail -n 40 "$F"`
+
+`$F` is the output file named in the background result. Do not use `Monitor` for this, and do not check on the job between waits.
 {{- end }}
 {{- if eq .harness "cursor" }}
 Cursor leaves a subagent's `model` at `inherit` unless I ask otherwise; this is me asking. When delegating work with the Task tool, pass an explicit `model` and match the tier to the work item's difficulty rather than defaulting everything to one model. The tiers below name a model family, not a slug — take the matching slug off the list the Task tool gives you.
