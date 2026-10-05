@@ -24,7 +24,7 @@ DO NOT use auto-memory ever. Project-local facts (testing conventions, build qui
 
 # Version Control
 
-I use `jj` for version control. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. Use ``  When creating a new repository, name the default branch `trunk` (not `main`). Use `` to view a file from a specific commit.
+I use `jj` for version control. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add. When creating a new repository, name the default branch `trunk` (not `main`).
 
 When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
 
