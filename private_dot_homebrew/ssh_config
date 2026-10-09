@@ -1,0 +1,11 @@
+# SSH config for Homebrew's git fetches, set by HOMEBREW_SSH_CONFIG_PATH in
+# brew.env. Deployed on macOS work machines only (see .chezmoiignore).
+#
+# Brew sets GIT_SSH_COMMAND, which overrides core.sshCommand, so git's -i for
+# the work key does not get to ssh. This file gives the key to ssh instead.
+# ssh -F reads this file in place of ~/.ssh/config and the system config.
+
+Host github.com
+    IdentitiesOnly yes
+    IdentityFile ~/.ssh/github_work_auth.pub
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"

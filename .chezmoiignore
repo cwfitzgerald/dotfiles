@@ -36,3 +36,8 @@ Library/**
 .ssh/github_open_auth.pub
 .ssh/github_work_auth.pub
 {{- end }}
+{{- if or (ne .chezmoi.os "darwin") (not (get . "workEmail")) }}
+{{/* Brew needs its own SSH config only where git picks the key with -i. */}}
+.homebrew/brew.env
+.homebrew/ssh_config
+{{- end }}
