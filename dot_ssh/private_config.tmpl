@@ -6,10 +6,11 @@
 # This machine carries a management policy that restricts
 # PubkeyAcceptedAlgorithms in /etc/ssh/ssh_config.d. ssh reads this file
 # before the system one and takes the first value it sees per option, so the
-# github.com block below outranks the policy; that host-specific override is
-# the sanctioned fix. It MUST stay scoped to github.com: the management
-# daemon rewrites this file to strip the override if it appears under Host *,
-# but leaves a github.com special case alone. IdentitiesOnly with no
+# host blocks below outrank the policy; a host-specific override is the
+# sanctioned fix. Each override MUST stay scoped to a host pattern: the
+# management daemon rewrites this file to strip the override if it appears
+# under Host *. The *.local block lets the ED25519 keys log in to devices on
+# the local network. In the github.com block, IdentitiesOnly with no
 # IdentityFile configured means a bare `ssh git@github.com` offers no keys at
 # all: keys only ever arrive via -i from git's core.sshCommand (work key as
 # the machine default in ~/.gitconfig, open key via identity-open). No
@@ -20,6 +21,9 @@
 
 Host github.com
     IdentitiesOnly yes
+    PubkeyAcceptedAlgorithms +ssh-ed25519
+
+Host *.local
     PubkeyAcceptedAlgorithms +ssh-ed25519
 {{- end }}
 
