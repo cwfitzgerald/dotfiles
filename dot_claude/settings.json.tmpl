@@ -69,6 +69,19 @@
     ],
     "defaultMode": "auto"
   },
+{{- if eq (env "CLAUDE_CODE_REMOTE") "true" }}
+  {{- /* The cloud VM's git config names Claude, and signs each commit with a key
+         that belongs to Claude. Name me as author and committer, and do not sign. */}}
+  "env": {
+    "GIT_AUTHOR_NAME": "Connor Fitzgerald",
+    "GIT_AUTHOR_EMAIL": {{ .email | toJson }},
+    "GIT_COMMITTER_NAME": "Connor Fitzgerald",
+    "GIT_COMMITTER_EMAIL": {{ .email | toJson }},
+    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_KEY_0": "commit.gpgsign",
+    "GIT_CONFIG_VALUE_0": "false"
+  },
+{{- end }}
 {{- $hooksDir := printf "%s/.claude/hooks" .chezmoi.homeDir -}}
 {{- /* pythonw, not python: the hook harness spawns commands without a console,
        and a console-subsystem child then flashes a new console window. */ -}}
