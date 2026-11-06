@@ -12,11 +12,15 @@ chezmoi apply -v
 
 ## Claude Code cloud sessions
 
-A cloud session has no TTY, so every prompt in `.chezmoi.toml.tmpl` must be
-given with `--promptString`, keyed on the exact prompt text. Give the work email
-prompt even when it is blank. Only the agent configuration is applied there.
+`cloud-setup.sh` sets up a cloud session. It installs chezmoi, applies only the
+agent configuration, and installs cargo-nextest. Set the setup script of the
+cloud environment to:
 
 ```
-chezmoi init cwfitzgerald --promptString "Open-source email address=<email>,Open-source SSH public key (e.g. ssh-ed25519 AAAA...)=<public key>,Work email address (blank if this machine has only one identity)="
-chezmoi apply ~/.claude ~/.agents
+#!/bin/bash
+set -euo pipefail
+git clone https://github.com/cwfitzgerald/dotfiles.git ~/.local/share/chezmoi
+DOTFILES_EMAIL='<email>' \
+DOTFILES_SIGNING_KEY='<public key>' \
+  ~/.local/share/chezmoi/cloud-setup.sh
 ```

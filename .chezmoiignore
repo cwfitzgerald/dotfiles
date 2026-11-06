@@ -1,7 +1,8 @@
-{{/* Repo-only docs; they describe the source tree and must not land in ~. */}}
+{{/* Repo-only files; they serve the source tree and must not land in ~. */}}
 README.md
 AGENTS.md
 CLAUDE.md
+cloud-setup.sh
 skills
 skills/**
 {{/* Hidden entries in skill roots belong to the agents. */}}
