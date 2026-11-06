@@ -15,7 +15,7 @@ export CLAUDE_CODE_REMOTE=true
 
 bin_dir="$HOME/.local/bin"
 mkdir -p "$bin_dir"
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin_dir"
+sh -c "$(curl -fsLS https://raw.githubusercontent.com/twpayne/chezmoi/master/assets/scripts/install.sh)" -- -b "$bin_dir"
 
 # A cloud session has no TTY, so each prompt in .chezmoi.toml.tmpl must have a
 # value here, keyed on the exact prompt text. The work email is blank.
@@ -25,4 +25,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$bin_dir"
   --promptString "Work email address (blank if this machine has only one identity)="
 "$bin_dir/chezmoi" apply ~/.claude ~/.agents
 
-curl -fsSL https://get.nexte.st/latest/linux | tar zxf - -C "${CARGO_HOME:-$HOME/.cargo}/bin"
+cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
+mkdir -p "$cargo_bin"
+curl -fsSL https://get.nexte.st/latest/linux | tar zxf - -C "$cargo_bin"
+"$cargo_bin/cargo-nextest" nextest --version
