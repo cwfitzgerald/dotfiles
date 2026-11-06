@@ -76,11 +76,23 @@
 {{- if eq .chezmoi.os "darwin" -}}
 {{- $caffeine = printf "python3 %s/caffeine.py" $hooksDir -}}
 {{- else if eq .chezmoi.os "linux" -}}
+{{-   if .chezmoi.kernel.osrelease | lower | contains "microsoft" -}}
 {{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
-{{- $caffeine = "pythonw.exe C:/Users/conno/.claude/hooks/caffeine.py" -}}
+{{-     $caffeine = "pythonw.exe C:/Users/conno/.claude/hooks/caffeine.py" -}}
+{{-   else -}}
+{{- /* Other Linux, such as a cloud VM, has no wake lock to hold: no caffeine hooks. */ -}}
+{{-     $caffeine = "" -}}
+{{-   end -}}
+{{- end -}}
+{{- /* The context-mode plugin installs this script; without it the entry fails. */ -}}
+{{- $cacheHeal := printf "%s/context-mode-cache-heal.mjs" $hooksDir -}}
+{{- if not (stat $cacheHeal) -}}
+{{-   $cacheHeal = "" -}}
 {{- end }}
   "hooks": {
+{{- if or $caffeine $cacheHeal }}
     "SessionStart": [
+{{- if $caffeine }}
       {
         "matcher": "",
         "hooks": [
@@ -89,18 +101,23 @@
             "command": "{{ $caffeine }} reset"
           }
         ]
-      },
+      }{{ if $cacheHeal }},{{ end }}
+{{- end }}
+{{- if $cacheHeal }}
       {{- /* context-mode's launcher injects this entry at runtime (its plugin-cache
              self-heal); mirror it exactly so apply and the plugin stop fighting. */}}
       {
         "hooks": [
           {
             "type": "command",
-            "command": "\"{{ .chezmoi.homeDir }}/.claude/hooks/context-mode-cache-heal.mjs\""
+            "command": "\"{{ $cacheHeal }}\""
           }
         ]
       }
-    ],
+{{- end }}
+    ]
+{{- end }}
+{{- if $caffeine }},
     "UserPromptSubmit": [
       {
         "matcher": "",
@@ -202,12 +219,14 @@
         ]
       }
     ]
+{{- end }}
   },
   {{/* linear tracks work issues, so enable it only where a work identity exists. */ -}}
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": false,
     "github@claude-plugins-official": true,
-    "context-mode@context-mode": true{{ if get . "workEmail" }},
+    {{- /* context-mode needs a newer Node than a Claude Code cloud session has. */}}
+    "context-mode@context-mode": {{ ne (env "CLAUDE_CODE_REMOTE") "true" }}{{ if get . "workEmail" }},
     "linear@claude-plugins-official": true
     {{- end }}
   },

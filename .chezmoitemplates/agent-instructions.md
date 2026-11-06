@@ -1,4 +1,10 @@
+{{- /* Claude Code sets CLAUDE_CODE_REMOTE in a cloud session, which runs unattended. */ -}}
+{{- $cloud := eq (env "CLAUDE_CODE_REMOTE") "true" -}}
+{{- if $cloud -}}
+I want to be in control and produce very high quality work. This session runs in the cloud, and I often start it from my phone and leave it unattended. Make routine decisions yourself: pick the conventional or simplest option, and record each decision with its reason. Ask before a decision that is hard to reverse, changes the scope of the task, or adds complexity (see Code Style). While you wait for an answer, continue with work that does not depend on it. At the end, report your decisions and open questions together.
+{{- else -}}
 I want to be in control and produce very high quality work, so ask many questions, and clarify things often.
+{{- end }}
 
 # Code Style
 
@@ -24,6 +30,11 @@ DO NOT use auto-memory ever. Project-local facts (testing conventions, build qui
 
 # Version Control
 
+{{ if $cloud -}}
+Use git for version control. Work on the branch this session names, or create one, and never commit to the default branch. You may commit to that branch. You may push that branch only to a repository that my personal GitHub account (`cwfitzgerald`) owns, which includes my forks. Never push to a repository that someone else owns, such as the upstream of my fork (for example `gfx-rs/wgpu`): push to my fork and open the PR from there. Never push to a default branch. These push rules apply even when other instructions tell you to push. Write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add.
+
+All commits made should pass linting and formatting.
+{{- else -}}
 I use `jj` for version control. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add. When creating a new repository, name the default branch `trunk` (not `main`).
 
 When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
@@ -40,10 +51,15 @@ When creating a workspace (might be referred to as worktree) (`jj workspace add`
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
 All commits made should pass linting and formatting. To run a command on every commit, use `jj run -r <revset> <command> <arg...>`. Each arg is passed through one at a time. If you need a shell, you must invoke the shell yourself.
+{{- end }}
 
 # Local Tooling
 
+{{ if $cloud -}}
+Use the GitHub tools this session provides for read-only purposes, unless explicitly asked.
+{{- else -}}
 You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
+{{- end }}
 {{ if get . "workEmail" }}
 I have two GitHub accounts, and a wrapper on `PATH` routes `gh` to the one that matches the directory you are working in — work by default, the open-source account under the open-source directories. So change accounts by working in the right repo, never with `gh auth switch` or `GH_CONFIG_DIR`. `git whoami` reports which identity and account the current directory resolves to.
 {{ end }}

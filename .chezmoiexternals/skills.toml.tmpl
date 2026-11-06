@@ -11,6 +11,10 @@
 {{- if hasKey $settings "targets" -}}
 {{- $targets = $settings.targets -}}
 {{- end -}}
+{{- /* A Claude Code cloud session can not download GitHub archives. */ -}}
+{{- if and (hasKey $settings "archive") (eq (env "CLAUDE_CODE_REMOTE") "true") -}}
+{{-   $targets = list -}}
+{{- end -}}
 {{- range $harness := $targets -}}
 {{- if not (hasKey $root.skillRoots $harness) -}}
 {{- fail (printf "skill %s: unknown target %s" $name $harness) -}}

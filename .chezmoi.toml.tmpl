@@ -22,7 +22,8 @@ args = ["--wait"]
 
 [git]
 autoCommit = true
-autoPush = true
+{{- /* autoPush pushes trunk, which a cloud session must never do; see agent-instructions.md. */}}
+autoPush = {{ ne (env "CLAUDE_CODE_REMOTE") "true" }}
 
 [merge]
 command = "nu"

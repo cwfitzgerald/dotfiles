@@ -8,10 +8,11 @@ Use Git for version control in this repo. This repo does not use jj.
 ## This repo is public
 
 `cwfitzgerald/dotfiles` is a **public GitHub repo**, and chezmoi is configured with
-`autoCommit = true` / `autoPush = true`. Any file you write here is committed and
-pushed to the open internet on the next `chezmoi add` or `chezmoi re-add` — those
-commit the whole source directory, not just the file named. There is no staging
-area and no review step. Treat every edit as publishing.
+`autoCommit = true` / `autoPush = true` (`autoPush` is off in a Claude Code cloud
+session). Any file you write here is committed and pushed to the open internet on
+the next `chezmoi add` or `chezmoi re-add` — those commit the whole source
+directory, not just the file named. There is no staging area and no review step.
+Treat every edit as publishing.
 
 Never write into this repo:
 
@@ -162,7 +163,8 @@ sets install paths; agents can also read other agents' skill directories.
 
 For a downloaded skill, use an `[archive]` table in `skill.toml` instead of
 local files. Set `url`, `include`, `stripComponents`, and `refreshPeriod` as
-needed; see `skills/agent-review/skill.toml`.
+needed; see `skills/agent-review/skill.toml`. A Claude Code cloud session can not
+download these archives, so it skips archive skills.
 
 `.chezmoiexternals/skills.toml.tmpl` discovers the folders. It renders local
 folders with `chezmoi archive` and installs all skills as exact archives.
