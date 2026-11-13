@@ -1,0 +1,4 @@
+# context-mode files that chezmoi or the plugin put in ~.
+.local/bin/context-mode
+.claude/hooks/context-mode-cache-heal.mjs
+.pi/agent/mcp.json

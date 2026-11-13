@@ -49,6 +49,7 @@ anything about who I work for.
 .chezmoidata.toml         Static data, re-read every apply (unlike chezmoi.toml).
 .chezmoiexternals/       Templates that define external files and archives.
 .chezmoiignore            Target paths chezmoi should NOT create. Itself a template.
+.chezmoiremove            Target paths chezmoi deletes on apply.
 .chezmoitemplates/        Named partials, included via `{{ template "name" . }}`.
 skills/                  Local skill sources and archive settings, one folder per skill.
 dot_foo/                  -> ~/.foo
