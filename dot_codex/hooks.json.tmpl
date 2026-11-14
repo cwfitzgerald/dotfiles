@@ -8,6 +8,10 @@
 {{- /* WSL: drive the Windows-side script so the keeper holds the host's wake lock */ -}}
 {{- $caffeine = "pythonw.exe 'C:/Users/conno/.codex/hooks/caffeine.py'" -}}
 {{- end -}}
+{{- $notes := printf "python3 '%s/project-notes.py'" $hooksDir -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{- $notes = printf "pythonw '%s/project-notes.py'" $hooksDir -}}
+{{- end -}}
 {{- /* Codex supports exactly 11 events (HookEventName in the app-server
        protocol), keyed PascalCase, and the config struct is deny_unknown_fields
        -- an unrecognized key rejects this whole file. Claude Code's
@@ -22,6 +26,11 @@
           {
             "type": "command",
             "command": "{{ $caffeine }} reset"
+          },
+          {
+            "type": "command",
+            "command": "{{ $notes }}",
+            "additionalContextLimit": 10000
           }
         ]
       }
@@ -62,6 +71,11 @@
           {
             "type": "command",
             "command": "{{ $caffeine }} acquire"
+          },
+          {
+            "type": "command",
+            "command": "{{ $notes }}",
+            "additionalContextLimit": 10000
           }
         ]
       }

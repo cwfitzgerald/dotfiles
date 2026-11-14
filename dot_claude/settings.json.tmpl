@@ -86,6 +86,10 @@
 {{- /* pythonw, not python: the hook harness spawns commands without a console,
        and a console-subsystem child then flashes a new console window. */ -}}
 {{- $caffeine := printf "pythonw %s/caffeine.py" $hooksDir -}}
+{{- $notes := printf "python3 %s/project-notes.py" $hooksDir -}}
+{{- if eq .chezmoi.os "windows" -}}
+{{- $notes = printf "pythonw %s/project-notes.py" $hooksDir -}}
+{{- end -}}
 {{- if eq .chezmoi.os "darwin" -}}
 {{- $caffeine = printf "python3 %s/caffeine.py" $hooksDir -}}
 {{- else if eq .chezmoi.os "linux" -}}
@@ -98,18 +102,41 @@
 {{-   end -}}
 {{- end }}
   "hooks": {
-{{- if $caffeine }}
     "SessionStart": [
       {
         "matcher": "",
         "hooks": [
+{{- if $caffeine }}
           {
             "type": "command",
             "command": "{{ $caffeine }} reset"
+          },
+{{- end }}
+          {
+            "type": "command",
+            "command": "{{ $notes }}"
           }
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+{{- if $caffeine }}
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} acquire"
+          },
+{{- end }}
+          {
+            "type": "command",
+            "command": "{{ $notes }}"
+          }
+        ]
+      }
+    ]
+{{- if $caffeine }},
     "UserPromptSubmit": [
       {
         "matcher": "",
@@ -139,17 +166,6 @@
           {
             "type": "command",
             "command": "{{ $caffeine }} interrupt"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{ $caffeine }} acquire"
           }
         ]
       }

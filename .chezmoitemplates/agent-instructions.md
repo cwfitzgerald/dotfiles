@@ -1,14 +1,16 @@
 {{- /* Claude Code sets CLAUDE_CODE_REMOTE in a cloud session, which runs unattended. */ -}}
 {{- $cloud := eq (env "CLAUDE_CODE_REMOTE") "true" -}}
-{{- if $cloud -}}
-I want to be in control and produce very high quality work. This session runs in the cloud, and I often start it from my phone and leave it unattended. Make routine decisions yourself: pick the conventional or simplest option, and record each decision with its reason. Ask before a decision that is hard to reverse, changes the scope of the task, or adds complexity (see Code Style). While you wait for an answer, continue with work that does not depend on it. At the end, report your decisions and open questions together.
-{{- else -}}
-I want to be in control and produce very high quality work, so ask many questions, and clarify things often.
-{{- end }}
+# Working Style
+
+I want to be in control and produce very high quality work. Make routine or obvious decisions yourself, present me questions which need expertise, larger context, change the scope of the task, or are tricky. When presenting findings to me, include more context than you would expect.
+
+For larger or more complicated tasks, act as the project manager for subagents. Your job is to understand the end-to-end. For any changes with real substance, you should be using at least one adversarial review passes. This should check for brevity (see code style below), correctness, tone, and LLM-isms. Fix the obvious results of that pass.
+
+If something I ask for explicitly contradicts these instructions, my explicit ask wins.
 
 # Code Style
 
-All complexity needs to be worth its keep. Do not introduce complexity unless explicitly cleared with me. We are not strictly optimizing for a minimal diff, but every additional bit of complexity needs to justified. If pure code motion would make the codebase or future changes easier to understand, they should be their own commit.
+All complexity needs to be worth its keep. Do not introduce complexity unless explicitly cleared with me. We are not strictly optimizing for a minimal diff, but every additional bit of complexity needs to justified. Code motion should be a separate commit from any active changes.
 
 # Writing
 
@@ -20,13 +22,15 @@ Always use `cargo nextest` to run tests if the project does not have specific in
 
 Avoid the `#[path = "..."]` attribute unless there is genuinely no alternative. For sharing helper modules across Rust integration tests without generating extra test binaries, prefer `autotests = false` in `Cargo.toml` plus an explicit `[[test]]` entry, and place helper `.rs` files as siblings of the test root reached by plain `mod foo;`.
 
+Most of the time, run targetted sets of tests runs or compile jobs. I often work on codebases with very large whole-suite test times. If applicable, run a larger portion of the test suite at the end of a task.
+
 # Python
 
 Python 3 is installed and you have access to uv for project/script management.
 
 # Projects
 
-DO NOT use auto-memory ever. Project-local facts (testing conventions, build quirks, repo-specific workflows) belong in the project's `CLAUDE.md`/`AGENTS.md`. If something needs to be preserved globally, put it in my global tooling.
+DO NOT use auto-memory ever. Project-local facts (testing conventions, build quirks, repo-specific workflows) belong in the project's `CLAUDE.md`/`AGENTS.md`. Some things are my personal preferences or a project does not use AGENTS.md, my global chezmoi tooling has per-project configuration. If something needs to be preserved globally, put it in my global tooling.
 
 # Version Control
 
@@ -35,22 +39,24 @@ Use git for version control. Work on the branch this session names, or create on
 
 All commits made should pass linting and formatting.
 {{- else -}}
-I use `jj` for version control. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk` is the head of the repository, whatever it is named. Unless explicitly asked, do not commit work. If explicitly asked to commit work, write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add. When creating a new repository, name the default branch `trunk` (not `main`).
+I use `jj` for all of my version control except chezmoi. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk()` is the head of the repository, whatever it is named. When committing work, write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add. When creating a new repository, name the default branch `trunk` (not `main`).
 
-When operating in jj, use @ only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
+When operating in jj, use `@` only as the working copy. Never edit a commit directly, always `jj new` to a child, then `jj squash` or `jj restore -f @ -t @- --restore-descendants` to apply the changes with/without changing dependents. Use `jj commit` (which is `jj describe` + `jj new`) when creating a commit.
 
 Useful jj commands:
 - `jj log --summary` prints which files were modified for each commit.
 - `jj log --stat` prints the LOC stats as well in git form.
-- `jj file show -r <change_id> <file>` prints 
+- `jj file show -r <change_id> <file>` prints a file at a given change_id.
 - `jj diff --git -f <from> -t <to>` diffs `<from>` and `<to>`. You must always use `--git` for diffs.
 - `jj pr-diff --git` to diff current head against the latest commit from trunk it touches.
 
-When creating a workspace (might be referred to as worktree) (`jj workspace add`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. Importantly jj workspaces are _not_ git worktrees and you _cannot_ use git commands in them. I have global configuration where this is configured to always be ignored. Use `jj ws-rm <name>` to remove a workspace and delete it in one swoop.
+When creating a workspace (might be referred to as worktrees) (`jj workspace add`), place it inside the repo under `.worktrees/<name>` rather than in a sibling directory. Importantly jj workspaces are _not_ git worktrees and you _cannot_ use git commands in them. I have global configuration where this is configured to always be ignored. Use `jj ws-rm <name>` to remove a workspace and delete it in one swoop.
 
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
 All commits made should pass linting and formatting. To run a command on every commit, use `jj run -r <revset> <command> <arg...>`. Each arg is passed through one at a time. If you need a shell, you must invoke the shell yourself.
+
+All PRs should follow the project's PR template. PR descriptions should be more conversational than otherwise, but should be particularly terse.
 {{- end }}
 
 # Local Tooling
@@ -58,7 +64,7 @@ All commits made should pass linting and formatting. To run a command on every c
 {{ if $cloud -}}
 Use the GitHub tools this session provides for read-only purposes, unless explicitly asked.
 {{- else -}}
-You have access to the `gh` cli. Use it for read-only purposes, unless explicitly asked.
+You have access to the `gh` cli.
 {{- end }}
 {{ if get . "workEmail" }}
 I have two GitHub accounts, and a wrapper on `PATH` routes `gh` to the one that matches the directory you are working in — work by default, the open-source account under the open-source directories. So change accounts by working in the right repo, never with `gh auth switch` or `GH_CONFIG_DIR`. `git whoami` reports which identity and account the current directory resolves to.
@@ -68,6 +74,8 @@ My global configuration — agent instructions, hooks, settings, `jj`/git/ssh/sh
 So: any change to Claude, Codex, Cursor, Pi, `jj`, or other dev-tool configuration must go through chezmoi rather than the live file, and if you find yourself about to hand-edit a config file that isn't managed yet, bring it under chezmoi first. To do either, work in `~/.local/share/chezmoi` and follow that repo's `AGENTS.md`, which covers the layout, the workflow, and the constraints on what may be written there.
 
 If you have been told things about tooling which turn out not to be true, please raise it to the me instead of silently working around it. I expect all of this to be true.
+
+I use nushell on all platforms.
 
 # Subagents
 

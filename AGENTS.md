@@ -142,6 +142,18 @@ so `dot_cursor` holds only what that misses or must shadow. Read the comment in
 Edits to that template are edits to my instructions on every machine — keep it
 tight, and keep it employer-agnostic per the rules above.
 
+## Project notes
+
+`dot_config/project-notes/` holds my personal notes for projects that I do not
+own, one file per project: `<host>/<owner>/<repo>.md`, all lowercase. A
+`SessionStart` and `SubagentStart` hook in Claude and Codex runs
+`.chezmoitemplates/project-notes.py`, which adds the file to the agent's context
+when a remote of the current repository matches. The checkout path has no
+effect.
+
+Claude gives the agent only a preview of notes longer than 10,000 characters.
+This repo is public, so add notes for open-source projects only.
+
 ## Skills
 
 Each folder in `skills/` defines one skill. Add `SKILL.md` and any supporting

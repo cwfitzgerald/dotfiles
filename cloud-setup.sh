@@ -23,7 +23,7 @@ sh -c "$(curl -fsLS https://raw.githubusercontent.com/twpayne/chezmoi/master/ass
   --promptString "Open-source email address=$DOTFILES_EMAIL" \
   --promptString "Open-source SSH public key (e.g. ssh-ed25519 AAAA...)=$DOTFILES_SIGNING_KEY" \
   --promptString "Work email address (blank if this machine has only one identity)="
-"$bin_dir/chezmoi" apply ~/.claude ~/.agents
+"$bin_dir/chezmoi" apply ~/.claude ~/.agents ~/.config/project-notes
 
 cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
 mkdir -p "$cargo_bin"
