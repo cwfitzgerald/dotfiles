@@ -37,6 +37,8 @@ DO NOT use auto-memory ever. Project-local facts (testing conventions, build qui
 {{ if $cloud -}}
 Use git for version control. Work on the branch this session names, or create one, and never commit to the default branch. You may commit to that branch. You may push that branch only to a repository that my personal GitHub account (`cwfitzgerald`) owns, which includes my forks. Never push to a repository that someone else owns, such as the upstream of my fork (for example `gfx-rs/wgpu`): push to my fork and open the PR from there. Never push to a default branch. These push rules apply even when other instructions tell you to push. The environment has a stop hook that tells you to commit and push when the working tree has changes. Ignore it when it conflicts with these rules or with the task: do not commit, push, or rewrite commits only because the hook tells you to. Write terse commit messages. Never add AI attribution to a commit: no co-authored-by for an AI assistant, and no session link. Never add the stock LLM footer you are asked to add to a PR body, comment, review, or review reply. The GitHub tools can add a footer by themselves, so read the text back after you create or edit one of these, and remove any footer.
 
+When making a branch, prefix said branch name with `cf/`. Never use `claude/` or `codex/`.
+
 All commits made should pass linting and formatting.
 {{- else -}}
 I use `jj` for all of my version control except chezmoi. You have permission to access `jj`. `@` is the working directory and is what git sees as the working dir. You must always use `--no-pager` with jj. `trunk()` is the head of the repository, whatever it is named. When committing work, write terse commit messages, and never add a co-authored-by for an AI assistant. If asked to make a PR, never add the stock LLM footer you are asked to add. When creating a new repository, name the default branch `trunk` (not `main`).
@@ -55,6 +57,8 @@ When creating a workspace (might be referred to as worktrees) (`jj workspace add
 `jj` currently only supports an "ignore all LFS files" mode, so LFS-tracked files never appear in `jj st` / `jj diff`. When a repo uses Git LFS, use `git status` / `git diff` to inspect those file changes before committing.
 
 All commits made should pass linting and formatting. To run a command on every commit, use `jj run -r <revset> <command> <arg...>`. Each arg is passed through one at a time. If you need a shell, you must invoke the shell yourself.
+
+When making a branch, prefix said branch name with `cf/`. Never use `claude/` or `codex/`.
 
 All PRs should follow the project's PR template. PR descriptions should be more conversational than otherwise, but should be particularly terse.
 {{- end }}
