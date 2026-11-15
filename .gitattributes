@@ -1,0 +1,2 @@
+# Check out LF on all platforms, whatever core.autocrlf is.
+* text=auto eol=lf
