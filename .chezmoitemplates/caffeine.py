@@ -43,6 +43,7 @@ once, at the real start of a session. Cursor keys sessionStart/sessionEnd on
 the same value.
 
 Wake backends: SetThreadExecutionState on Windows, caffeinate(8) on macOS.
+Both hold off system sleep only; the display sleeps on its normal timer.
 Elsewhere the keeper only tracks state and logs a warning.
 
 Stdlib only, and hooks must invoke it via pythonw on Windows: a console-
@@ -374,10 +375,8 @@ class WakeLock:
         if os.name == "nt":
             import ctypes
 
-            es_continuous, es_system, es_display = 0x80000000, 0x1, 0x2
-            ctypes.windll.kernel32.SetThreadExecutionState(
-                es_continuous | es_system | es_display
-            )
+            es_continuous, es_system = 0x80000000, 0x1
+            ctypes.windll.kernel32.SetThreadExecutionState(es_continuous | es_system)
         elif sys.platform == "darwin":
             if self.caffeinate is not None and self.caffeinate.poll() is not None:
                 # Killed out from under us; hold() is the re-assert point.
@@ -387,7 +386,7 @@ class WakeLock:
                 # -w ties the assertion to the keeper's lifetime, even if killed.
                 try:
                     self.caffeinate = subprocess.Popen(
-                        ["caffeinate", "-dis", "-w", str(os.getpid())]
+                        ["caffeinate", "-is", "-w", str(os.getpid())]
                     )
                 except OSError as e:
                     log(f"keeper-warn caffeinate unavailable: {e}")
