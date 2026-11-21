@@ -1,9 +1,9 @@
 # Pulled in by ~/.gitconfig via includeIf; see dot_gitconfig.tmpl.
 [user]
 	email = "{{ .email }}"
-	signingkey = {{ .signingKey }}
+	signingkey = ~/.ssh/github_open_auth
 [core]
 	# Key routing only. ~/.ssh/config sets IdentitiesOnly for github.com with
 	# no IdentityFile, so this -i is the sole key ever offered -- the GitHub
 	# account follows the repo's directory, not the shell or the agent.
-	sshCommand = ssh -i ~/.ssh/github_open_auth.pub
+	sshCommand = ssh -i ~/.ssh/github_open_auth

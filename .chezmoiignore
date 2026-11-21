@@ -21,7 +21,6 @@ Documents/**
 {{- end }}
 {{- if ne .chezmoi.os "darwin" }}
 Library/**
-.ssh/config
 .claude/hooks/*.sh
 .codex/hooks/*.sh
 {{- end }}
@@ -35,10 +34,14 @@ Library/**
 .local/bin/gh
 {{- end }}
 {{- if not (get . "workEmail") }}
-{{/* Single identity, so ~/.ssh/config has no per-directory Match blocks and
-     nothing would point IdentitiesOnly at these. */}}
-.ssh/github_open_auth.pub
 .ssh/github_work_auth.pub
+{{- end }}
+{{/* No 1Password reference, so the user supplies the private key file. */}}
+{{- if not (get . "privateKeyRef") }}
+.ssh/github_open_auth
+{{- end }}
+{{- if not (get . "workPrivateKeyRef") }}
+.ssh/github_work_auth
 {{- end }}
 {{- if or (ne .chezmoi.os "darwin") (not (get . "workEmail")) }}
 {{/* Brew needs its own SSH config only where git picks the key with -i. */}}

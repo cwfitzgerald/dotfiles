@@ -1,6 +1,5 @@
 {{- $workEmail := get . "workEmail" -}}
-# Deployed on macOS only (see .chezmoiignore); Windows 1Password takes over
-# the native OpenSSH agent pipe, so no config is needed there.
+# The private keys are files in ~/.ssh; no ssh agent is used.
 {{- if $workEmail }}
 #
 # This machine carries a management policy that restricts
@@ -25,7 +24,10 @@ Host github.com
 
 Host *.local
     PubkeyAcceptedAlgorithms +ssh-ed25519
-{{- end }}
+
+Host * !github.com
+{{- else }}
 
 Host *
-    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+{{- end }}
+    IdentityFile ~/.ssh/github_open_auth

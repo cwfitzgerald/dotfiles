@@ -22,6 +22,7 @@ sh -c "$(curl -fsLS https://raw.githubusercontent.com/twpayne/chezmoi/master/ass
 "$bin_dir/chezmoi" init \
   --promptString "Open-source email address=$DOTFILES_EMAIL" \
   --promptString "Open-source SSH public key (e.g. ssh-ed25519 AAAA...)=$DOTFILES_SIGNING_KEY" \
+  --promptString "1Password reference of the open-source SSH private key (e.g. op://vault/item/private key; blank to supply the key file yourself)=" \
   --promptString "Work email address (blank if this machine has only one identity)="
 "$bin_dir/chezmoi" apply ~/.claude ~/.agents ~/.config/project-notes
 

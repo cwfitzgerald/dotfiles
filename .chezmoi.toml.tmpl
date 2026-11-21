@@ -2,19 +2,26 @@
      and it is used globally. */}}
 {{- $email := promptStringOnce . "email" "Open-source email address" -}}
 {{- $signingKey := promptStringOnce . "signingKey" "Open-source SSH public key (e.g. ssh-ed25519 AAAA...)" -}}
+{{/* Where 1Password holds the private key. With a blank value chezmoi does not
+     write the key file; see .chezmoiignore. */}}
+{{- $privateKeyRef := promptStringOnce . "privateKeyRef" "1Password reference of the open-source SSH private key (e.g. op://vault/item/private key; blank to supply the key file yourself)" "" -}}
 {{/* A non-empty workEmail marks this as a work machine, which switches on the
      per-directory identity split (see .chezmoiignore). Leave blank elsewhere. */}}
 {{- $workEmail := promptStringOnce . "workEmail" "Work email address (blank if this machine has only one identity)" "" -}}
 {{- $workSigningKey := "" -}}
+{{- $workPrivateKeyRef := "" -}}
 {{- if $workEmail -}}
 {{-   $workSigningKey = promptStringOnce . "workSigningKey" "Work SSH public key (e.g. ssh-ed25519 AAAA...)" -}}
+{{-   $workPrivateKeyRef = promptStringOnce . "workPrivateKeyRef" "1Password reference of the work SSH private key (e.g. op://vault/item/private key; blank to supply the key file yourself)" "" -}}
 {{- end -}}
 
 [data]
 email = {{ $email | quote }}
 signingKey = {{ $signingKey | quote }}
+privateKeyRef = {{ $privateKeyRef | quote }}
 workEmail = {{ $workEmail | quote }}
 workSigningKey = {{ $workSigningKey | quote }}
+workPrivateKeyRef = {{ $workPrivateKeyRef | quote }}
 
 [edit]
 command = "code"

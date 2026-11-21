@@ -27,9 +27,14 @@ Never write into this repo:
 
 Instead:
 
-- Identity values (emails, signing keys) are **prompted** by `.chezmoi.toml.tmpl`
-  and stored in `~/.config/chezmoi/chezmoi.toml`, which is *not* in this repo.
-  Reference them as `.email`, `.workEmail`, `.signingKey`, `.workSigningKey`.
+- Identity values (emails, public signing keys, 1Password references of the
+  private keys) are **prompted** by `.chezmoi.toml.tmpl` and stored in
+  `~/.config/chezmoi/chezmoi.toml`, which is *not* in this repo. Reference them
+  as `.email`, `.workEmail`, `.signingKey`, `.workSigningKey`, `.privateKeyRef`,
+  `.workPrivateKeyRef`.
+- The private keys are files in `~/.ssh`. `dot_ssh/create_private_github_*_auth.tmpl`
+  reads each one from 1Password only while the file does not exist. ssh, git and
+  jj use the files directly; no ssh agent is used.
 - Whether a machine has a work identity at all is expressed as
   `{{ if get . "workEmail" }}` — a boolean, never the value itself.
 - Directory-to-identity mapping lives in `.chezmoidata.toml` as generic paths

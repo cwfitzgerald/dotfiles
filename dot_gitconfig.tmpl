@@ -11,7 +11,7 @@
 	# then the sole key offered thanks to IdentitiesOnly in ~/.ssh/config).
 	# Deliberately NOT an IdentityFile in ~/.ssh/config: config identities are
 	# offered before command-line ones, which would break the open override.
-	sshCommand = ssh -i ~/.ssh/github_work_auth.pub
+	sshCommand = ssh -i ~/.ssh/github_work_auth
 {{- end }}
 [user]
 	name = Connor Fitzgerald
@@ -22,18 +22,11 @@
 	useConfigOnly = true
 {{- else }}
 	email = "{{ .email }}"
-	signingkey = {{ .signingKey }}
+	signingkey = ~/.ssh/github_open_auth
 {{- end }}
 [gpg]
 	format = ssh
 [gpg "ssh"]
-{{- if eq .chezmoi.os "windows" }}
-	program = op-ssh-sign.exe
-{{- else if eq .chezmoi.os "darwin" }}
-	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
-{{- else }}
-	program = op-ssh-sign
-{{- end }}
 	allowedSignersFile = {{ .chezmoi.homeDir }}/.ssh/allowed_signers
 [commit]
 	gpgsign = true

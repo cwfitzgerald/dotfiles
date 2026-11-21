@@ -1,0 +1,3 @@
+{{- /* chezmoi renders a create_ file only while the target does not exist, so
+       1Password is asked once for each machine. */ -}}
+{{ onepasswordRead (printf "%s?ssh-format=openssh" .privateKeyRef) }}
