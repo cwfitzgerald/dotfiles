@@ -156,6 +156,15 @@ own, one file per project: `<host>/<owner>/<repo>.md`, all lowercase. A
 when a remote of the current repository matches. The checkout path has no
 effect.
 
+Claude also runs the script from `PostToolUse` for `Read`, `Edit`, `Write` and
+`Bash`. There the repository is the one that contains the file that the tool
+used, or the working directory for `Bash`. Thus a session that starts above its
+repositories gets the notes when it first uses a file in one. The script
+records the notes that each agent has received in a per-session file in the
+system temporary directory. `PostToolUse` gives each agent the notes for a
+project one time, until `SessionStart` clears the record. Each matched tool
+call waits for the script.
+
 Claude gives the agent only a preview of notes longer than 10,000 characters.
 This repo is public, so add notes for open-source projects only.
 

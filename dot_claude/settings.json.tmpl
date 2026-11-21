@@ -146,8 +146,17 @@
             "command": "{{ $caffeine }} touch"
           }
         ]
-      }
+      },
 {{- end }}
+      {
+        "matcher": "Read|Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $notes }}"
+          }
+        ]
+      }
     ]
 {{- if $caffeine }},
     "UserPromptSubmit": [

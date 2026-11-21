@@ -7,9 +7,12 @@ each checkout on each machine. `github.com/gfx-rs/wgpu.md` under NOTES_DIR
 applies to a repository that has a remote for that project, under any remote
 name. Keys are lowercase.
 
-Wired to SessionStart and SubagentStart. The hook payload arrives as JSON on
-stdin, and its `cwd` selects the repository. With no matching file the script
-prints nothing.
+Wired to SessionStart, SubagentStart and PostToolUse. The hook payload arrives
+as JSON on stdin. The directory of the file that a tool used selects the
+repository, or `cwd` when the payload has no file. Thus a session that starts
+above its repositories gets the notes when it first uses a file in one.
+PostToolUse gives each agent the notes for a project one time, until the next
+SessionStart. With no notes to give the script prints nothing.
 
 Stdlib only, and targets Python 3.8, for the same reasons as caffeine.py.
 """
@@ -20,9 +23,14 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 NOTES_DIR = Path.home() / ".config" / "project-notes"
+
+# One file per session. Each line is `<agent id> <project key>` for notes
+# that the agent has received.
+STATE_DIR = Path(tempfile.gettempdir()) / "project-notes"
 
 # jj first: a jj workspace has no .git directory of its own.
 REMOTE_COMMANDS = (
@@ -72,24 +80,46 @@ def project_key(url: str) -> str | None:
 def main() -> None:
     payload = json.load(sys.stdin)
 
+    event = payload["hook_event_name"]
+    file_path = payload.get("tool_input", {}).get("file_path")
+    directory = str(Path(payload["cwd"], file_path).parent) if file_path else payload["cwd"]
+
     keys = []
-    for url in remote_urls(payload["cwd"]):
+    for url in remote_urls(directory):
         key = project_key(url)
         if key is not None and key not in keys:
             keys.append(key)
 
+    # Cursor sends `conversation_id` in place of `session_id` on tool events.
+    session = payload.get("session_id") or payload.get("conversation_id")
+    state = STATE_DIR / "{}.txt".format(session)
+    if event == "SessionStart":
+        state.unlink(missing_ok=True)
+    # The start events are new contexts, so only PostToolUse reads the record.
+    seen = []
+    if event == "PostToolUse" and state.is_file():
+        seen = state.read_text(encoding="utf-8").splitlines()
+    agent = payload.get("agent_id", "main")
+
     sections = []
+    entries = []
     for key in keys:
+        entry = "{} {}".format(agent, key)
         path = NOTES_DIR / (key + ".md")
-        if path.is_file():
+        if entry not in seen and path.is_file():
             notes = path.read_text(encoding="utf-8").strip()
             sections.append("The user's personal notes for {}:\n\n{}".format(key, notes))
+            entries.append(entry)
     if not sections:
         return
 
+    STATE_DIR.mkdir(mode=0o700, exist_ok=True)
+    with state.open("a", encoding="utf-8") as file:
+        file.write("".join(entry + "\n" for entry in entries))
+
     output = {
         "hookSpecificOutput": {
-            "hookEventName": payload["hook_event_name"],
+            "hookEventName": event,
             "additionalContext": "\n\n".join(sections),
         }
     }
