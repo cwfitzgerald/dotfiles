@@ -135,6 +135,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+{{- if $caffeine }}
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{ $caffeine }} touch"
+          }
+        ]
+      }
+{{- end }}
     ]
 {{- if $caffeine }},
     "UserPromptSubmit": [
@@ -144,17 +157,6 @@
           {
             "type": "command",
             "command": "{{ $caffeine }} on"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{ $caffeine }} touch"
           }
         ]
       }
